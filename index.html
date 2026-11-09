@@ -17,8 +17,8 @@
   html, body { margin:0; background:var(--bg); color:var(--txt); font-family:-apple-system,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif; }
   body { min-height:100vh; -webkit-user-select:none; user-select:none; }
   button { font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; }
-  button:focus-visible, input:focus-visible { outline:2px solid var(--vert); outline-offset:2px; }
-  .page { padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 120px); max-width:520px; margin:0 auto; }
+  button:focus-visible, input:focus-visible, summary:focus-visible { outline:2px solid var(--vert); outline-offset:2px; }
+  .page { padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 130px); max-width:520px; margin:0 auto; }
 
   .date { color:var(--gris); font-size:15px; margin:6px 0 14px; }
   .hero { background:var(--s1); border-radius:22px; padding:20px; }
@@ -27,15 +27,21 @@
   .sous { color:var(--gris); margin:0 0 14px; font-size:15px; }
   .apercu { list-style:none; padding:0; margin:0 0 18px; font-size:15px; line-height:1.75; color:var(--clair); }
   .principal { display:block; width:100%; background:var(--vert); color:var(--fonce); font-weight:700; font-size:18px; padding:17px; border-radius:16px; text-align:center; }
-  .principal:active, .ligne:active, .stepper button:active { transform:scale(.97); }
+  .principal:active, .ligne:active, .stepper button:active, .onglet:active { transform:scale(.97); }
   .secondaire { display:block; width:100%; background:var(--s2); font-weight:600; font-size:16px; padding:15px; border-radius:16px; text-align:center; }
+  .mini { color:var(--vert); font-size:15px; padding:10px 0; }
 
-  .semaine { margin-top:12px; background:var(--s1); border-radius:18px; padding:14px 16px; }
-  .semaine b { font-size:16px; }
-  .semaine p { margin:4px 0 0; color:var(--clair); font-size:15px; }
+  .carte { margin-top:12px; background:var(--s1); border-radius:18px; padding:14px 16px; }
+  .carte b { font-size:16px; }
+  .carte p { margin:4px 0 0; color:var(--clair); font-size:15px; }
   .pastilles { display:flex; gap:5px; margin-top:12px; }
   .pastilles i { flex:1; height:6px; border-radius:3px; background:var(--s2); }
   .pastilles i.on { background:var(--vert); }
+  .jours { display:flex; justify-content:space-between; margin-top:12px; }
+  .jours span { width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-size:13px; font-weight:600; background:var(--s2); color:var(--gris); }
+  .jours span.ok { background:var(--vert); color:var(--fonce); }
+  .jours span.auj { box-shadow:0 0 0 2px var(--vert); }
+  .alerte { display:block; width:100%; text-align:left; margin-top:12px; background:var(--vertf); color:#c4f1d0; border-radius:14px; padding:12px 14px; font-size:15px; }
 
   h2 { font-size:15px; margin:26px 4px 8px; color:var(--gris); font-weight:600; }
   .ligne { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:var(--s1); border-radius:16px; padding:14px; margin-bottom:8px; }
@@ -47,7 +53,8 @@
   .rond.ok { background:var(--vert); color:var(--fonce); }
   .paire { border:1px solid var(--ligne); border-radius:20px; padding:10px 8px 0; margin-bottom:8px; }
   .paire > p { margin:0 8px 8px; font-size:13px; color:var(--vert); font-weight:600; }
-  .lien { display:block; margin:22px auto 0; color:var(--vert); font-size:16px; padding:10px; }
+  .lien { display:block; margin:18px auto 0; color:var(--vert); font-size:16px; padding:10px; }
+  .vide { color:var(--gris); font-size:15px; background:var(--s1); border-radius:16px; padding:18px; line-height:1.45; }
 
   .haut { display:flex; align-items:center; justify-content:space-between; min-height:44px; margin-bottom:6px; }
   .retour { font-size:17px; color:var(--vert); padding:8px 8px 8px 0; }
@@ -62,7 +69,7 @@
   .puce { min-width:66px; padding:9px 10px; border-radius:12px; background:var(--s1); color:var(--gris); font-size:14px; font-weight:600; text-align:center; border:2px solid transparent; }
   .puce.ok { background:var(--vertf); color:var(--vert); }
   .puce.ici { border-color:var(--vert); color:var(--txt); }
-  .info { background:var(--s1); border-radius:14px; padding:12px 14px; font-size:15px; margin-bottom:8px; color:var(--clair); }
+  .info { background:var(--s1); border-radius:14px; padding:12px 14px; font-size:15px; margin-bottom:8px; color:var(--clair); line-height:1.4; }
   .info span { color:var(--gris); }
   .info.conseil { background:var(--vertf); color:#c4f1d0; }
 
@@ -73,9 +80,41 @@
   .stepper input { flex:1; min-width:0; background:none; border:0; color:var(--txt); font:inherit; font-size:46px; font-weight:700; text-align:center; font-variant-numeric:tabular-nums; padding:4px 0; border-radius:12px; -webkit-user-select:text; user-select:text; }
   .stepper input:focus { background:var(--s2); outline:none; }
   .stepper input::placeholder { color:var(--ligne); }
+  .disques { margin:8px 0 0; text-align:center; color:var(--gris); font-size:14px; }
+  .disques b { color:var(--clair); }
+
+  details { background:var(--s1); border-radius:16px; margin-top:10px; }
+  summary { list-style:none; padding:14px 16px; font-weight:600; font-size:16px; display:flex; justify-content:space-between; cursor:pointer; }
+  summary::-webkit-details-marker { display:none; }
+  summary::after { content:"›"; color:var(--gris); transform:rotate(90deg); }
+  details[open] summary::after { transform:rotate(-90deg); }
+  details ul { margin:0; padding:0 16px 14px 34px; color:var(--clair); font-size:15px; line-height:1.5; }
+  .note { display:block; width:100%; margin-top:10px; background:var(--s1); border:1px solid var(--ligne); border-radius:16px; color:var(--txt); font:inherit; font-size:15px; padding:14px 16px; -webkit-user-select:text; user-select:text; }
+  .note::placeholder { color:var(--gris); }
+  .actions-exo { display:flex; justify-content:space-between; margin-top:4px; }
+  .retirer { color:var(--gris); font-size:15px; padding:10px 0; }
+
+  .tuiles { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0 6px; }
+  .tuile { background:var(--s1); border-radius:16px; padding:12px; }
+  .tuile b { display:block; font-size:22px; font-variant-numeric:tabular-nums; }
+  .tuile span { color:var(--gris); font-size:13px; }
+  .rec { color:var(--vert); font-weight:600; }
+
+  .graph { background:var(--s1); border-radius:18px; padding:14px 10px 8px; margin-top:12px; }
+  .graph .titre { margin:0 6px 2px; font-weight:600; font-size:15px; }
+  .graph .lecture { margin:0 6px 6px; color:var(--gris); font-size:14px; min-height:20px; }
+  .graph svg { display:block; width:100%; height:auto; touch-action:pan-y; }
+  .saisie { display:flex; gap:8px; margin-top:10px; }
+  .saisie input { flex:1; min-width:0; background:var(--s2); border:0; border-radius:12px; color:var(--txt); font:inherit; font-size:18px; padding:12px; -webkit-user-select:text; user-select:text; }
+  .saisie button { background:var(--vert); color:var(--fonce); font-weight:700; border-radius:12px; padding:0 16px; }
 
   .bas { position:fixed; left:0; right:0; bottom:0; padding:28px 16px calc(env(safe-area-inset-bottom) + 14px); background:linear-gradient(rgba(14,17,16,0), var(--bg) 40%); }
   .bas > * { max-width:488px; margin:0 auto; }
+  nav { position:fixed; left:0; right:0; bottom:0; z-index:5; background:rgba(20,24,21,.97); border-top:1px solid var(--ligne); display:flex; justify-content:center; padding:6px 6px calc(env(safe-area-inset-bottom) + 6px); }
+  nav[hidden] { display:none; }
+  .onglet { flex:1; max-width:130px; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0; color:var(--gris); font-size:12px; font-weight:600; }
+  .onglet svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .onglet[aria-current="page"] { color:var(--vert); }
 
   #repos { position:fixed; inset:0; z-index:10; background:rgba(11,14,12,.98); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:24px; }
   #repos[hidden] { display:none; }
@@ -89,7 +128,6 @@
   .ctrl button { flex:1; background:var(--s1); padding:16px 0; border-radius:16px; font-size:16px; font-weight:600; }
   .ctrl .passer { background:var(--vert); color:var(--fonce); flex:1.4; }
 
-  .rec { color:var(--vert); font-weight:600; }
   .texte p, .texte li { font-size:15px; line-height:1.5; color:var(--clair); }
   .texte ul, .texte ol { padding-left:20px; }
   .texte h2 { color:var(--txt); font-size:17px; margin:22px 0 6px; }
@@ -100,6 +138,13 @@
 </head>
 <body>
 <main id="app"></main>
+
+<nav id="nav" aria-label="Navigation">
+  <button class="onglet" data-a="onglet" data-v="accueil"><svg viewBox="0 0 24 24"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>Séance</button>
+  <button class="onglet" data-a="onglet" data-v="histo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Historique</button>
+  <button class="onglet" data-a="onglet" data-v="progres"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Progrès</button>
+  <button class="onglet" data-a="onglet" data-v="plan"><svg viewBox="0 0 24 24"><path d="M7 3h10v18H7zM10 8h4M10 12h4M10 16h2"/></svg>Plan</button>
+</nav>
 
 <div id="repos" hidden role="dialog" aria-label="Repos">
   <p class="titre">Repos</p>
@@ -118,11 +163,11 @@
 
 <script>
 // leg : +5 kg au lieu de +2,5 kg. petit : échec sur la dernière série en semaines 5-7.
-// ss : superset (les 2 exercices qui se suivent avec le même numéro). lest : le poids noté est le lest.
+// ss : superset (les 2 exercices qui se suivent avec le même numéro). lest : le poids noté est le lest. barre : calcul des disques.
 const P = {
   A: [
-    { id:'squat', n:'Squat barre', s:3, lo:6, hi:8, repos:180, leg:1 },
-    { id:'couche', n:'Développé couché barre', s:3, lo:6, hi:8, repos:180 },
+    { id:'squat', n:'Squat barre', s:3, lo:6, hi:8, repos:180, leg:1, barre:1 },
+    { id:'couche', n:'Développé couché barre', s:3, lo:6, hi:8, repos:180, barre:1 },
     { id:'tractions', n:'Tractions', s:4, lo:6, hi:10, repos:120, lest:1 },
     { id:'legcurl', n:'Leg curl assis', s:3, lo:10, hi:12, repos:90, leg:1 },
     { id:'elev', n:'Élévations latérales', s:3, lo:12, hi:20, repos:60, petit:1 },
@@ -133,7 +178,7 @@ const P = {
     { id:'presse', n:'Presse à cuisses', s:3, lo:10, hi:12, repos:120, leg:1 },
     { id:'inclhalt', n:'Développé incliné haltères', s:3, lo:8, hi:12, repos:120 },
     { id:'row', n:'Row machine poitrine appuyée', s:4, lo:8, hi:12, repos:120 },
-    { id:'hip', n:'Hip thrust', s:3, lo:8, hi:12, repos:120, leg:1 },
+    { id:'hip', n:'Hip thrust', s:3, lo:8, hi:12, repos:120, leg:1, barre:1 },
     { id:'dips', n:'Dips lestés', s:3, lo:6, hi:10, repos:120, lest:1 },
     { id:'rfly', n:'Reverse fly', s:3, lo:15, hi:20, ss:1 },
     { id:'mollets', n:'Mollets debout', s:3, lo:15, hi:20, ss:1, leg:1, petit:1 },
@@ -149,20 +194,48 @@ const P = {
     { id:'marteau', n:'Curl marteau', s:3, lo:12, hi:15, ss:3, petit:1 },
   ],
 };
+const TECH = {
+  squat:['Pieds largeur d\'épaules, pointes un peu ouvertes.','Genoux dans l\'axe des pieds, dos neutre.','Descends au moins cuisses parallèles, puis pousse le sol.'],
+  couche:['Omoplates serrées et basses, pieds ancrés au sol.','Barre vers le bas des pecs, coudes pas trop écartés.','Fesses sur le banc pendant toute la série.'],
+  tractions:['Départ bras tendus.','Tire les coudes vers les hanches, poitrine vers la barre.','Menton au-dessus de la barre, descente contrôlée.'],
+  legcurl:['Genou aligné avec l\'axe de la machine.','Bassin collé au dossier, cuisse bloquée.','Plie à fond, remonte lentement presque jambe tendue.'],
+  elev:['Buste légèrement penché, coudes un peu fléchis.','Monte jusqu\'à hauteur d\'épaules en menant avec les coudes.','Pas d\'élan.'],
+  curlinc:['Banc à 45-60°, bras pendants derrière le corps.','Coudes fixes, ne les avance pas en montant.','Descends jusqu\'au bras tendu pour bien étirer.'],
+  tri:['Dos à la poulie, corde au-dessus de la tête.','Coudes serrés et fixes.','Descends bien derrière la tête, tends complètement.'],
+  presse:['Pieds largeur d\'épaules, au milieu de la plateforme.','Descends sans décoller le bas du dos.','Ne verrouille pas les genoux en haut.'],
+  inclhalt:['Banc à environ 30°.','Omoplates serrées, haltères descendus bas sur les côtés.','Pousse vers le haut sans cogner les haltères.'],
+  row:['Poitrine collée au support.','Tire les coudes vers l\'arrière, serre les omoplates.','Laisse les épaules s\'avancer à l\'étirement.'],
+  hip:['Bas des omoplates sur le banc, barre sur le pli des hanches avec une mousse.','Pieds à plat, tibias verticaux en haut du mouvement.','Serre les fessiers en haut, menton rentré, sans cambrer.'],
+  dips:['Buste légèrement penché en avant.','Descends jusqu\'à épaules un peu sous les coudes, sans douleur.','Pousse jusqu\'aux bras tendus.'],
+  rfly:['Bras presque tendus.','Ouvre vers l\'arrière en menant avec les coudes.','Épaules basses, pas de haussement.'],
+  mollets:['Genoux tendus.','Descends les talons au plus bas, tiens 1 s.','Monte sur la pointe au maximum.'],
+  bulgare:['Pied arrière posé sur le banc.','Descends jusqu\'à ce que le genou arrière frôle le sol.','Buste légèrement penché en avant, genou avant dans l\'axe.'],
+  chest:['Poignées à hauteur du milieu des pecs.','Omoplates serrées contre le dossier.','Ne verrouille pas les coudes.'],
+  tirage:['Prise un peu plus large que les épaules.','Tire la barre vers le haut de la poitrine, coudes vers le bas.','Ne te penche pas trop en arrière.'],
+  legext:['Genou aligné avec l\'axe de la machine.','Tends complètement et tiens 1 s.','Descente lente.'],
+  epaules:['Dos collé au dossier.','Pousse sans cambrer.','Redescends jusqu\'à hauteur du menton.'],
+  marteau:['Prise neutre, pouces vers le haut.','Coudes collés au corps.','Pas de balancier.'],
+};
 const ORDRE = ['A', 'B', 'C'];
 const REPOS_SUPERSET = 90; // après chaque tour de superset (non précisé dans le programme, réglable avec ±15 s)
+const DISQUES = [25, 20, 15, 10, 5, 2.5, 1.25], BARRE = 20;
 
 // ---------- données ----------
 const CLE = 'muscu';
 const D = JSON.parse(localStorage.getItem(CLE) || '{"log":{}}');
+D.log ||= {}; D.notes ||= {}; D.seances ||= {}; D.poids ||= {};
 const sauver = () => localStorage.setItem(CLE, JSON.stringify(D));
 const jour = d => d.toLocaleDateString('sv-SE');
 const AUJ = jour(new Date());
 const lundi = d => { const x = new Date(d); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return jour(x); };
+const plusJours = (d, n) => { const x = new Date(d + 'T12:00'); x.setDate(x.getDate() + n); return jour(x); };
 if (!D.debut) { D.debut = lundi(new Date()); sauver(); }
 const dateFr = (d, o = { weekday:'long', day:'numeric', month:'long' }) => new Date(d + 'T12:00').toLocaleDateString('fr-FR', o);
-const kgFr = v => String(v).replace('.', ',');
-const num = v => parseFloat(String(v || '').replace(',', '.')) || 0;
+const dateCourte = d => new Date(d + 'T12:00').toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+const kgFr = v => String(Math.round(v * 100) / 100).replace('.', ',');
+const num = v => parseFloat(String(v ?? '').replace(',', '.')) || 0;
+const milliers = v => Math.round(v).toLocaleString('fr-FR');
+const duree = ms => { const m = Math.max(1, Math.round(ms / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0'); };
 
 function semaine() {
   const n = Math.max(0, Math.floor((new Date(AUJ) - new Date(D.debut)) / 864e5 / 7));
@@ -177,14 +250,18 @@ const REPOS_TXT = { 60:'1 min', 90:'1 min 30', 120:'2 min', 180:'3 min' };
 const cle = (s, e) => s + '.' + e.id;
 const nbSeries = e => semaine().s === 8 ? Math.ceil(e.s / 2) : e.s;
 const faitSet = (x, d) => x && (x[2] || (d < AUJ && x[1])); // les anciennes saisies sans ✓ comptent
-const duJour = (s, e) => (D.log[cle(s, e)] || {})[AUJ] || [];
+const setsDu = (s, e, d) => ((D.log[cle(s, e)] || {})[d] || []);
+const duJour = (s, e) => setsDu(s, e, AUJ);
+const faitsDu = (s, e, d) => setsDu(s, e, d).filter(x => faitSet(x, d));
 function derniere(s, e) {
   const h = D.log[cle(s, e)] || {};
   const ds = Object.keys(h).filter(d => d < AUJ && h[d].some(x => faitSet(x, d))).sort();
   return ds.length ? h[ds.at(-1)].filter(x => faitSet(x, '0')) : null;
 }
-const resume = sets => sets.map(x => (num(x[0]) ? kgFr(x[0]) + ' kg × ' : '') + x[1]).join(', ');
-const tropFacile = (s, e, prec) => prec && prec.length >= e.s && prec.slice(0, e.s).every(x => +x[1] >= e.hi);
+const resume = sets => sets.map(x => (num(x[0]) ? kgFr(num(x[0])) + ' kg × ' : '') + x[1]).join(', ');
+const tropFacile = (e, prec) => prec && prec.length >= e.s && prec.slice(0, e.s).every(x => +x[1] >= e.hi);
+const arrondi = v => Math.round(v / 2.5) * 2.5;
+const e1rm = x => num(x[0]) * (1 + num(x[1]) / 30);
 
 function etapes(s) {
   const l = P[s], out = [];
@@ -204,23 +281,85 @@ const faite = (s, st) => !!(duJour(s, P[s][st.i])[st.k] || [])[2];
 const exFini = (s, i) => etapes(s).filter(st => st.i === i).every(st => faite(s, st));
 const nbFaits = s => P[s].filter((e, i) => exFini(s, i)).length;
 const commencee = s => etapes(s).some(st => faite(s, st));
-function derniereDate(s) {
-  let m = '';
-  for (const e of P[s]) for (const [d, sets] of Object.entries(D.log[cle(s, e)] || {}))
-    if (d > m && sets.some(x => faitSet(x, d))) m = d;
-  return m;
-}
-function prochaine() {
-  for (const s of ORDRE) if (commencee(s) && nbFaits(s) < P[s].length) return s;
-  let best = null, bd = '';
-  for (const s of ORDRE) { const d = derniereDate(s); if (d && d >= bd) { bd = d; best = s; } }
-  if (!best) return 'A';
-  return bd === AUJ ? best : ORDRE[(ORDRE.indexOf(best) + 1) % 3];
-}
 const partenaire = (s, i) => { const l = P[s], e = l[i]; return !e.ss ? null : (l[i - 1] && l[i - 1].ss === e.ss ? l[i - 1] : l[i + 1]); };
 
+// toutes les séances faites : [{ s, d }], de la plus récente à la plus ancienne
+function seancesFaites() {
+  const vu = new Set();
+  for (const [k, h] of Object.entries(D.log)) {
+    const s = k.split('.')[0]; if (!P[s]) continue;
+    for (const [d, sets] of Object.entries(h)) if (sets.some(x => faitSet(x, d))) vu.add(d + '|' + s);
+  }
+  return [...vu].map(x => { const [d, s] = x.split('|'); return { d, s }; }).sort((a, b) => b.d.localeCompare(a.d) || a.s.localeCompare(b.s));
+}
+const derniereDate = s => (seancesFaites().find(x => x.s === s) || {}).d || '';
+function prochaine() {
+  for (const s of ORDRE) if (commencee(s) && nbFaits(s) < P[s].length) return s;
+  const der = seancesFaites()[0];
+  if (!der) return 'A';
+  return der.d === AUJ ? der.s : ORDRE[(ORDRE.indexOf(der.s) + 1) % 3];
+}
+function statsSeance(s, d) {
+  let series = 0, volume = 0, ex = 0;
+  for (const e of P[s]) { const f = faitsDu(s, e, d); if (f.length) ex++; series += f.length; volume += f.reduce((t, x) => t + num(x[0]) * num(x[1]), 0); }
+  const m = D.seances[d + '|' + s];
+  return { series, volume, ex, duree: m && m.t1 > m.t0 ? duree(m.t1 - m.t0) : null };
+}
+// historique d'un mouvement, toutes séances confondues (le leg curl de A et de C, par exemple)
+function histoMouvement(id) {
+  const par = {};
+  for (const [k, h] of Object.entries(D.log)) {
+    if (k.split('.')[1] !== id) continue;
+    for (const [d, sets] of Object.entries(h)) { const f = sets.filter(x => faitSet(x, d)); if (f.length) (par[d] ||= []).push(...f); }
+  }
+  return Object.keys(par).sort().map(d => ({ d, sets: par[d] }));
+}
+const MOUVEMENTS = (() => { const vu = new Map(); for (const s of ORDRE) for (const e of P[s]) if (!vu.has(e.id)) vu.set(e.id, e); return [...vu.values()]; })();
+function disques(total) {
+  let r = (total - BARRE) / 2; if (r < 0) return null;
+  const out = []; for (const p of DISQUES) while (r >= p - 1e-9) { out.push(p); r -= p; }
+  return { out, reste: Math.round(r * 100) / 100 };
+}
+
+// ---------- graphique (une seule série, lecture au doigt) ----------
+function graphique(pts, unite) {
+  if (!pts.length) return '';
+  const W = 340, H = 170, g = 38, dr = 14, ht = 14, bas = 24;
+  const ys = pts.map(p => p.y), mn = Math.min(...ys), mx = Math.max(...ys);
+  const pad = (mx - mn) * .15 || Math.max(1, mx * .1), y0 = Math.max(0, mn - pad), y1 = mx + pad;
+  const X = i => pts.length === 1 ? (g + W - dr) / 2 : g + i * (W - dr - g) / (pts.length - 1);
+  const Y = v => ht + (1 - (v - y0) / (y1 - y0)) * (H - ht - bas);
+  const ticks = [y0, (y0 + y1) / 2, y1];
+  let s = `<svg viewBox="0 0 ${W} ${H}" data-pts='${JSON.stringify(pts.map((p, i) => [X(i), Y(p.y), p.y, p.label]))}' data-u="${unite}" role="img" aria-label="Évolution en ${unite}">`;
+  for (const t of ticks) s += `<line x1="${g}" x2="${W - dr}" y1="${Y(t)}" y2="${Y(t)}" stroke="#2e3730" stroke-width="1"/><text x="${g - 6}" y="${Y(t) + 4}" fill="#9aa59c" font-size="11" text-anchor="end">${kgFr(y1 - y0 < 6 ? Math.round(t * 10) / 10 : Math.round(t))}</text>`;
+  s += `<text x="${X(0)}" y="${H - 6}" fill="#9aa59c" font-size="11" text-anchor="${pts.length > 1 ? 'start' : 'middle'}">${pts[0].label}</text>`;
+  if (pts.length > 1) s += `<text x="${X(pts.length - 1)}" y="${H - 6}" fill="#9aa59c" font-size="11" text-anchor="end">${pts.at(-1).label}</text>`;
+  if (pts.length > 1) s += `<polyline fill="none" stroke="#5ccf78" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${pts.map((p, i) => X(i) + ',' + Y(p.y)).join(' ')}"/>`;
+  pts.forEach((p, i) => s += `<circle cx="${X(i)}" cy="${Y(p.y)}" r="4" fill="#5ccf78" stroke="#171c19" stroke-width="2"/>`);
+  const l = pts.length - 1;
+  s += `<text x="${X(l)}" y="${Y(pts[l].y) - 10}" fill="#f2f5f2" font-size="12" font-weight="700" text-anchor="${pts.length > 1 ? 'end' : 'middle'}">${kgFr(pts[l].y)}</text>`;
+  s += `<line class="viseur" x1="0" x2="0" y1="${ht}" y2="${H - bas}" stroke="#9aa59c" stroke-width="1" visibility="hidden"/><circle class="point" r="6" fill="#5ccf78" stroke="#f2f5f2" stroke-width="2" visibility="hidden"/>`;
+  return s + '</svg>';
+}
+function brancherGraphiques() {
+  app.querySelectorAll('.graph svg[data-pts]').forEach(svg => {
+    const pts = JSON.parse(svg.dataset.pts), u = svg.dataset.u, lect = svg.parentElement.querySelector('.lecture');
+    const vis = svg.querySelector('.viseur'), pt = svg.querySelector('.point');
+    const montrer = ev => {
+      const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * 340 / r.width;
+      let b = 0; pts.forEach((p, i) => { if (Math.abs(p[0] - x) < Math.abs(pts[b][0] - x)) b = i; });
+      const [px, py, v, lab] = pts[b];
+      vis.setAttribute('x1', px); vis.setAttribute('x2', px); vis.setAttribute('visibility', 'visible');
+      pt.setAttribute('cx', px); pt.setAttribute('cy', py); pt.setAttribute('visibility', 'visible');
+      lect.textContent = `${lab} : ${kgFr(v)} ${u}`;
+    };
+    svg.addEventListener('pointerdown', montrer); svg.addEventListener('pointermove', ev => ev.buttons || ev.pointerType === 'mouse' ? montrer(ev) : 0);
+  });
+}
+
 // ---------- navigation ----------
-const etat = { v:'accueil', s:'A', pos:0 };
+const etat = { v:'accueil', s:'A', pos:0, d:AUJ, id:'' };
+const RACINES = ['accueil', 'histo', 'progres', 'plan'];
 function aller(v, extra = {}, remplacer = false) {
   Object.assign(etat, { v }, extra);
   history[remplacer ? 'replaceState' : 'pushState']({ ...etat }, '');
@@ -229,9 +368,12 @@ function aller(v, extra = {}, remplacer = false) {
 addEventListener('popstate', ev => { Object.assign(etat, ev.state || { v:'accueil' }); fermerRepos(); rendre(); });
 history.replaceState({ ...etat }, '');
 
-const app = document.getElementById('app');
+const app = document.getElementById('app'), NAV = document.getElementById('nav');
 function rendre() {
-  ({ accueil:vAccueil, seance:vSeance, exo:vExo, fin:vFin, plan:vPlan })[etat.v]();
+  ({ accueil:vAccueil, seance:vSeance, exo:vExo, bilan:vBilan, histo:vHisto, progres:vProgres, mouv:vMouv, plan:vPlan })[etat.v]();
+  NAV.hidden = !RACINES.includes(etat.v);
+  NAV.querySelectorAll('.onglet').forEach(b => b.dataset.v === etat.v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  brancherGraphiques();
   eveil(etat.v === 'exo');
 }
 
@@ -239,8 +381,13 @@ function rendre() {
 function vAccueil() {
   const s = prochaine(), { cycle, s: sem } = semaine(), n = nbFaits(s), tot = P[s].length;
   const finie = n === tot && commencee(s);
-  const bouton = finie ? `<button class="secondaire" data-a="fin" data-s="${s}">Voir le résumé</button>`
+  const bouton = finie ? `<button class="secondaire" data-a="bilan" data-s="${s}" data-d="${AUJ}">Voir le résumé</button>`
     : `<button class="principal" data-a="ouvrir" data-s="${s}">${commencee(s) ? `Reprendre (${n} sur ${tot})` : 'Commencer'}</button>`;
+  const lun = lundi(AUJ), faits = new Set(seancesFaites().map(x => x.d));
+  const jours = [...Array(7)].map((_, i) => { const d = plusJours(lun, i);
+    return `<span class="${faits.has(d) ? 'ok' : ''} ${d === AUJ ? 'auj' : ''}" aria-label="${dateFr(d)}${faits.has(d) ? ', séance faite' : ''}">${'LMMJVSD'[i]}</span>`; }).join('');
+  const nbSem = [...faits].filter(d => d >= lun && d <= plusJours(lun, 6)).length;
+  const aSauver = seancesFaites().length >= 3 && (!D.export || plusJours(D.export, 14) < AUJ);
   app.innerHTML = `<div class="page">
     <p class="date">${dateFr(AUJ)}</p>
     <div class="hero">
@@ -250,17 +397,21 @@ function vAccueil() {
       <ul class="apercu">${P[s].map(e => `<li>${e.n}</li>`).join('')}</ul>
       ${bouton}
     </div>
-    <div class="semaine">
+    <div class="carte">
+      <b>Cette semaine : ${nbSem} séance${nbSem > 1 ? 's' : ''} sur 3</b>
+      <div class="jours">${jours}</div>
+    </div>
+    <div class="carte">
       <b>Cycle ${cycle}, semaine ${sem} sur 8</b>
       <p>${REGLE(sem)}</p>
       <div class="pastilles">${[...Array(8)].map((_, i) => `<i class="${i < sem ? 'on' : ''}"></i>`).join('')}</div>
     </div>
+    ${aSauver ? '<button class="alerte" data-a="onglet" data-v="plan">Pense à sauvegarder tes données (onglet Plan). Elles ne sont que sur ce téléphone.</button>' : ''}
     <h2>Autres séances</h2>
     ${ORDRE.filter(x => x !== s).map(x => { const d = derniereDate(x); return `
       <button class="ligne" data-a="ouvrir" data-s="${x}"><span class="rond">${x}</span>
         <span class="txt"><b>Séance ${x}</b><small>${d ? 'Faite le ' + dateFr(d, { weekday:'long', day:'numeric', month:'short' }) : 'Pas encore faite'}</small></span>
         <span class="chev">›</span></button>`; }).join('')}
-    <button class="lien" data-a="plan">Plan et règles</button>
   </div>`;
 }
 
@@ -278,24 +429,29 @@ function vSeance() {
   }
   const fini = n === l.length;
   app.innerHTML = `<div class="page">
-    <div class="haut"><button class="retour" data-a="retour">‹ Accueil</button><span class="compteur">${n} sur ${l.length} exercices</span></div>
+    <div class="haut"><button class="retour" data-a="retour">‹ Retour</button><span class="compteur">${n} sur ${l.length} exercices</span></div>
     <h1>Séance ${s}</h1>
     <div class="prog"><i style="width:${100 * n / l.length}%"></i></div>
+    <div class="info"><span>Échauffement :</span> 5 min de cardio, puis 2 séries légères sur le premier exercice.</div>
     ${liste}
   </div>
-  <div class="bas">${fini ? `<button class="secondaire" data-a="fin" data-s="${s}">Voir le résumé</button>`
+  <div class="bas">${fini ? `<button class="secondaire" data-a="bilan" data-s="${s}" data-d="${AUJ}">Voir le résumé</button>`
     : `<button class="principal" data-a="continuer">${commencee(s) ? 'Continuer' : 'Commencer la séance'}</button>`}</div>`;
 }
 
 function valeursDepart(s, st) {
   const e = P[s][st.i], auj = duJour(s, e), prec = derniere(s, e);
   if (auj[st.k] && auj[st.k][1]) return { kg: auj[st.k][0], r: auj[st.k][1] };
-  const monte = tropFacile(s, e, prec), inc = e.leg ? 5 : 2.5;
   const avant = auj[st.k - 1];
   if (avant && avant[1]) return { kg: avant[0], r: avant[1] };
-  const p = prec && (prec[st.k] || prec.at(-1));
+  const monte = tropFacile(e, prec), inc = e.leg ? 5 : 2.5, p = prec && (prec[st.k] || prec.at(-1));
   if (p) return { kg: monte ? String(num(p[0]) + inc) : p[0], r: monte ? e.lo : p[1] };
   return { kg: '', r: e.lo };
+}
+function texteDisques(kg) {
+  const r = disques(kg); if (!r) return `Moins que la barre seule (${BARRE} kg)`;
+  if (!r.out.length) return `Barre seule (${BARRE} kg)`;
+  return `Par côté : <b>${r.out.map(kgFr).join(' + ')}</b>${r.reste ? ` (il manque ${kgFr(r.reste * 2)} kg)` : ''}`;
 }
 
 function vExo() {
@@ -303,16 +459,20 @@ function vExo() {
   const auj = duJour(s, e), prec = derniere(s, e), sem = semaine().s, v = valeursDepart(s, st), pa = partenaire(s, st.i);
   const etapesEx = E.map((x, j) => ({ ...x, j })).filter(x => x.i === st.i);
   const puces = etapesEx.map(x => { const z = auj[x.k];
-    const ok = z && z[2], txt = ok ? (num(z[0]) ? kgFr(z[0]) + '×' : '') + z[1] : 'Série ' + (x.k + 1);
+    const ok = z && z[2], txt = ok ? (num(z[0]) ? kgFr(num(z[0])) + '×' : '') + z[1] : 'Série ' + (x.k + 1);
     return `<button class="puce ${ok ? 'ok' : ''} ${x.j === etat.pos ? 'ici' : ''}" data-a="aller" data-j="${x.j}">${txt}</button>`; }).join('');
+  const m = D.seances[AUJ + '|' + s];
   let infos = '';
+  if (st.i === 0 && st.k === 0 && !auj.some(x => x && x[2]) && num(v.kg) >= 20)
+    infos += `<div class="info"><span>Échauffement :</span> 8 reps à ${kgFr(arrondi(num(v.kg) * .5))} kg, puis 4 reps à ${kgFr(arrondi(num(v.kg) * .75))} kg.</div>`;
   if (prec) infos += `<div class="info"><span>Dernière fois :</span> ${resume(prec)}</div>`;
-  if (tropFacile(s, e, prec) && !auj.some(x => x && x[2])) infos += `<div class="info conseil">Tu as fait le haut de la fourchette partout : ajoute ${e.leg ? '5' : '2,5'} kg aujourd'hui. C'est déjà prérempli.</div>`;
+  if (tropFacile(e, prec) && !auj.some(x => x && x[2])) infos += `<div class="info conseil">Tu as fait le haut de la fourchette partout : ajoute ${e.leg ? '5' : '2,5'} kg aujourd'hui. C'est déjà prérempli.</div>`;
   if (sem >= 5 && sem <= 7 && e.petit && st.k === nb - 1) infos += `<div class="info conseil">Dernière série : va jusqu'à l'échec.</div>`;
   const tag = pa ? `<span class="tag">Superset avec ${pa.n.toLowerCase()}${st.repos ? '' : ', enchaîne sans repos'}</span>` : '';
   const reposTxt = e.repos ? `, repos ${REPOS_TXT[e.repos]}` : '';
+  const dejaFaite = auj[st.k] && auj[st.k][2];
   app.innerHTML = `<div class="page">
-    <div class="haut"><button class="retour" data-a="retour">‹ Séance ${s}</button><span class="compteur">Exercice ${st.i + 1} sur ${P[s].length}</span></div>
+    <div class="haut"><button class="retour" data-a="retour">‹ Séance ${s}</button><span class="compteur">Exercice ${st.i + 1} sur ${P[s].length}${m ? ', ' + duree(Date.now() - m.t0) : ''}</span></div>
     ${tag}
     <h1>${e.n}</h1>
     <p class="cible">Série ${st.k + 1} sur ${nb}, objectif ${e.lo}-${e.hi} reps${e.note ? ' ' + e.note : ''}${reposTxt}</p>
@@ -321,44 +481,120 @@ function vExo() {
     ${infos}
     <div class="reglage"><span class="lab">${e.lest ? 'Lest (kg)' : 'Poids (kg)'}</span>
       <div class="stepper"><button data-a="pas" data-c="kg" data-d="-2.5" aria-label="Moins 2,5 kg">−</button>
-      <input id="kg" inputmode="decimal" value="${v.kg === '' ? '' : kgFr(v.kg)}" placeholder="0" aria-label="Poids en kg">
-      <button data-a="pas" data-c="kg" data-d="2.5" aria-label="Plus 2,5 kg">+</button></div></div>
+      <input id="kg" inputmode="decimal" value="${v.kg === '' ? '' : kgFr(num(v.kg))}" placeholder="0" aria-label="Poids en kg">
+      <button data-a="pas" data-c="kg" data-d="2.5" aria-label="Plus 2,5 kg">+</button></div>
+      ${e.barre ? `<p class="disques" id="disques">${texteDisques(num(v.kg))}</p>` : ''}</div>
     <div class="reglage"><span class="lab">Répétitions</span>
       <div class="stepper"><button data-a="pas" data-c="r" data-d="-1" aria-label="Une rep de moins">−</button>
       <input id="r" inputmode="numeric" value="${v.r}" aria-label="Répétitions">
       <button data-a="pas" data-c="r" data-d="1" aria-label="Une rep de plus">+</button></div></div>
+    <div class="actions-exo">
+      ${dejaFaite ? '<button class="retirer" data-a="retirer">Retirer cette série</button>' : '<span></span>'}
+      <button class="mini" data-a="mouv" data-id="${e.id}">Ma progression ›</button>
+    </div>
+    <details><summary>Technique</summary><ul>${(TECH[e.id] || []).map(t => `<li>${t}</li>`).join('')}</ul></details>
+    <input class="note" id="note" value="${(D.notes[e.id] || '').replace(/"/g, '&quot;')}" placeholder="Note : réglage du siège, prise, machine…" aria-label="Note sur cet exercice">
   </div>
-  <div class="bas"><button class="principal" data-a="valider">Valider la série ${st.k + 1}</button></div>`;
+  <div class="bas"><button class="principal" data-a="valider">${dejaFaite ? 'Modifier' : 'Valider'} la série ${st.k + 1}</button></div>`;
+  app.querySelector('#note').oninput = ev => { D.notes[e.id] = ev.target.value; sauver(); };
+  if (e.barre) app.querySelector('#kg').oninput = ev => app.querySelector('#disques').innerHTML = texteDisques(num(ev.target.value));
 }
 
-function vFin() {
-  const s = etat.s;
+function vBilan() {
+  const { s, d } = etat, st = statsSeance(s, d);
   const lignes = P[s].map(e => {
-    const sets = duJour(s, e).filter(x => x && x[2]);
+    const sets = faitsDu(s, e, d);
     if (!sets.length) return '';
-    const h = D.log[cle(s, e)] || {};
-    const avant = Object.keys(h).filter(d => d < AUJ).flatMap(d => h[d].filter(x => faitSet(x, d)).map(x => num(x[0])));
+    const avant = histoMouvement(e.id).filter(x => x.d < d).flatMap(x => x.sets.map(y => num(y[0])));
     const record = avant.length && Math.max(...sets.map(x => num(x[0]))) > Math.max(...avant);
-    return `<div class="ligne"><span class="rond ok">✓</span><span class="txt"><b>${e.n}</b>
-      <small>${resume(sets)}${record ? ' <span class="rec">record de charge</span>' : ''}</small></span></div>`;
+    return `<button class="ligne" data-a="mouv" data-id="${e.id}"><span class="rond ok">✓</span><span class="txt"><b>${e.n}</b>
+      <small>${resume(sets)}${record ? ' <span class="rec">record de charge</span>' : ''}</small></span><span class="chev">›</span></button>`;
+  }).join('');
+  const fin = d === AUJ && nbFaits(s) === P[s].length;
+  app.innerHTML = `<div class="page">
+    <div class="haut"><button class="retour" data-a="retour">‹ Retour</button><span></span></div>
+    <p class="sur">${dateFr(d)}</p>
+    <h1>Séance ${s}${fin ? ' terminée' : ''}</h1>
+    <div class="tuiles">
+      <div class="tuile"><b>${st.duree || '–'}</b><span>durée</span></div>
+      <div class="tuile"><b>${st.series}</b><span>séries</span></div>
+      <div class="tuile"><b>${milliers(st.volume)}</b><span>kg soulevés</span></div>
+    </div>
+    ${fin ? `<p class="sous">Prochaine séance : ${ORDRE[(ORDRE.indexOf(s) + 1) % 3]}.</p>` : ''}
+    ${lignes || '<p class="vide">Aucune série validée ce jour-là.</p>'}
+  </div>
+  ${fin ? '<div class="bas"><button class="principal" data-a="onglet" data-v="accueil">Retour à l\'accueil</button></div>' : ''}`;
+}
+
+function vHisto() {
+  const l = seancesFaites();
+  app.innerHTML = `<div class="page">
+    <h1>Historique</h1>
+    <p class="sous">${l.length} séance${l.length > 1 ? 's' : ''} enregistrée${l.length > 1 ? 's' : ''}</p>
+    ${l.length ? l.map(x => { const st = statsSeance(x.s, x.d);
+      return `<button class="ligne" data-a="bilan" data-s="${x.s}" data-d="${x.d}"><span class="rond">${x.s}</span>
+        <span class="txt"><b>${dateFr(x.d)}</b><small>${[st.duree, st.ex + ' exercices', milliers(st.volume) + ' kg soulevés'].filter(Boolean).join(', ')}</small></span>
+        <span class="chev">›</span></button>`; }).join('')
+      : '<p class="vide">Tes séances apparaîtront ici dès ta première série validée.</p>'}
+  </div>`;
+}
+
+function vProgres() {
+  const poids = Object.keys(D.poids).sort().map(d => ({ y: D.poids[d], label: dateCourte(d) }));
+  const lignes = MOUVEMENTS.map(e => {
+    const h = histoMouvement(e.id); if (!h.length) return '';
+    const maxs = h.map(x => Math.max(...x.sets.map(y => num(y[0]))));
+    const delta = maxs.at(-1) - maxs[0];
+    const sous = maxs.at(-1) ? `max ${kgFr(maxs.at(-1))} kg` + (h.length > 1 && delta ? `, ${delta > 0 ? '+' : ''}${kgFr(delta)} kg depuis le ${dateCourte(h[0].d)}` : '') : `${h.length} séance${h.length > 1 ? 's' : ''}`;
+    return `<button class="ligne" data-a="mouv" data-id="${e.id}"><span class="txt"><b>${e.n}</b><small>${sous}</small></span><span class="chev">›</span></button>`;
   }).join('');
   app.innerHTML = `<div class="page">
-    <div class="haut"><button class="retour" data-a="accueil">‹ Accueil</button><span></span></div>
-    <p class="sur">${dateFr(AUJ)}</p>
-    <h1>Séance ${s} terminée</h1>
-    <p class="sous">${nbFaits(s)} exercices sur ${P[s].length}. Prochaine séance : ${ORDRE[(ORDRE.indexOf(s) + 1) % 3]}.</p>
-    ${lignes || '<p class="sous">Aucune série validée aujourd\'hui.</p>'}
-  </div>
-  <div class="bas"><button class="principal" data-a="accueil">Retour à l'accueil</button></div>`;
+    <h1>Progrès</h1>
+    <div class="graph">
+      <p class="titre">Poids du corps (kg)</p>
+      <p class="lecture">${poids.length ? 'Dernier : ' + kgFr(poids.at(-1).y) + ' kg. Touche la courbe pour lire une date.' : 'Note ton poids de temps en temps, le matin à jeun.'}</p>
+      ${graphique(poids, 'kg')}
+      <div class="saisie"><input id="pc" inputmode="decimal" placeholder="Poids d'aujourd'hui" value="${D.poids[AUJ] ? kgFr(D.poids[AUJ]) : ''}" aria-label="Poids du corps en kg">
+      <button data-a="poids">Enregistrer</button></div>
+    </div>
+    <h2>Par exercice</h2>
+    ${lignes || '<p class="vide">Tes courbes apparaîtront après ta première séance.</p>'}
+  </div>`;
+}
+
+function vMouv() {
+  const e = MOUVEMENTS.find(x => x.id === etat.id), h = histoMouvement(e.id);
+  const avecKg = h.some(x => x.sets.some(y => num(y[0])));
+  const pts = h.map(x => ({ y: avecKg ? Math.max(...x.sets.map(y => num(y[0]))) : Math.max(...x.sets.map(y => num(y[1]))), label: dateCourte(x.d) }));
+  let rec = '';
+  if (h.length) {
+    const tous = h.flatMap(x => x.sets.map(y => ({ ...y, d: x.d })));
+    const lourd = tous.reduce((a, b) => num(b[0]) > num(a[0]) || (num(b[0]) === num(a[0]) && num(b[1]) > num(a[1])) ? b : a);
+    const fort = tous.reduce((a, b) => e1rm(b) > e1rm(a) ? b : a);
+    rec = `<div class="tuiles">
+      <div class="tuile"><b>${avecKg ? kgFr(num(lourd[0])) : lourd[1]}</b><span>${avecKg ? 'kg max' : 'reps max'}</span></div>
+      <div class="tuile"><b>${avecKg ? '≈ ' + Math.round(e1rm(fort)) : '–'}</b><span>1RM estimé</span></div>
+      <div class="tuile"><b>${h.length}</b><span>séances</span></div></div>`;
+  }
+  app.innerHTML = `<div class="page">
+    <div class="haut"><button class="retour" data-a="retour">‹ Retour</button><span></span></div>
+    <h1>${e.n}</h1>
+    ${rec}
+    ${h.length ? `<div class="graph"><p class="titre">${avecKg ? 'Charge max par séance (kg)' : 'Reps max par séance'}</p>
+      <p class="lecture">Touche la courbe pour lire une séance.</p>${graphique(pts, avecKg ? 'kg' : 'reps')}</div>
+      <h2>Détail</h2>
+      ${h.slice().reverse().map(x => `<div class="ligne"><span class="txt"><b>${dateFr(x.d)}</b><small>${resume(x.sets)}</small></span></div>`).join('')}`
+    : '<p class="vide">Pas encore de série sur cet exercice.</p>'}
+    <details><summary>Technique</summary><ul>${(TECH[e.id] || []).map(t => `<li>${t}</li>`).join('')}</ul></details>
+  </div>`;
 }
 
 function vPlan() {
   app.innerHTML = `<div class="page texte">
-    <div class="haut"><button class="retour" data-a="retour">‹ Accueil</button><span></span></div>
     <h1>Plan et règles</h1>
     <h2>Organisation</h2>
     <p>Lundi A, mercredi B, vendredi C. Un jour de repos entre deux séances. Si tu décales, l'app te propose simplement la séance suivante.</p>
-    <p>Échauffement : 5 min de cardio, puis 2 séries légères sur le premier exercice.</p>
+    <p>Échauffement : 5 min de cardio, puis 2 séries légères sur le premier exercice. L'app te donne les charges.</p>
     <h2>Plan sur 8 semaines</h2>
     <ul><li>Semaines 1-2 : arrête-toi à 2 reps de l'échec.</li>
     <li>Semaines 3-4 : arrête-toi à 1 rep de l'échec.</li>
@@ -371,15 +607,17 @@ function vPlan() {
     <li>Mêmes exercices et mêmes machines pendant les 8 semaines.</li></ol>
     <h2>Réglages</h2>
     <p>Début du cycle 1 (un lundi)<input type="date" id="debut" value="${D.debut}"></p>
-    <p>Tes séries restent sur ce téléphone. Fais une sauvegarde de temps en temps.</p>
+    <p>Tes séries restent sur ce téléphone. Fais une sauvegarde de temps en temps${D.export ? ` (dernière le ${dateFr(D.export, { day:'numeric', month:'long' })})` : ''}.</p>
     <div class="actions"><button class="secondaire" id="export">Sauvegarder mes données</button>
     <label class="secondaire">Restaurer une sauvegarde<input type="file" id="import" accept=".json,application/json" hidden></label></div>
   </div>`;
   app.querySelector('#debut').onchange = ev => { D.debut = lundi(ev.target.value); sauver(); rendre(); };
-  app.querySelector('#export').onclick = () => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(D)], { type:'application/json' }));
-    a.download = `muscu-${AUJ}.json`; a.click();
+  app.querySelector('#export').onclick = async () => {
+    const f = new File([JSON.stringify(D)], `muscu-${AUJ}.json`, { type:'application/json' });
+    try { if (navigator.canShare?.({ files:[f] })) await navigator.share({ files:[f], title:'Sauvegarde Muscu' });
+      else { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); }
+      D.export = AUJ; sauver(); rendre();
+    } catch {}
   };
   app.querySelector('#import').onchange = async ev => {
     try { const x = JSON.parse(await ev.target.files[0].text()); if (!x.log) throw 0;
@@ -391,36 +629,42 @@ function vPlan() {
 // ---------- actions ----------
 const premiereAFaire = s => etapes(s).findIndex(st => !faite(s, st));
 const ACTIONS = {
+  onglet: b => aller(b.dataset.v),
   ouvrir: b => aller('seance', { s: b.dataset.s }),
   retour: () => history.back(),
-  accueil: () => aller('accueil'),
-  plan: () => aller('plan'),
-  fin: b => aller('fin', { s: b.dataset.s || etat.s }),
-  continuer: () => { const j = premiereAFaire(etat.s); j < 0 ? aller('fin') : aller('exo', { pos: j }); },
+  bilan: b => aller('bilan', { s: b.dataset.s, d: b.dataset.d }),
+  mouv: b => aller('mouv', { id: b.dataset.id }),
+  continuer: () => { const j = premiereAFaire(etat.s); j < 0 ? aller('bilan', { d: AUJ }) : aller('exo', { pos: j }); },
   exo: b => { const i = +b.dataset.i, E = etapes(etat.s);
     let j = E.findIndex(st => st.i === i && !faite(etat.s, st)); if (j < 0) j = E.findIndex(st => st.i === i);
     aller('exo', { pos: j }); },
   aller: b => aller('exo', { pos: +b.dataset.j }, true),
   pas: b => { const inp = document.getElementById(b.dataset.c), d = +b.dataset.d;
     const x = Math.max(0, Math.round((num(inp.value) + d) * 10) / 10); inp.value = b.dataset.c === 'kg' ? kgFr(x) : x;
-    navigator.vibrate?.(8); },
+    inp.dispatchEvent(new Event('input')); navigator.vibrate?.(8); },
+  poids: () => { const v = num(document.getElementById('pc').value); if (!v) return document.getElementById('pc').focus();
+    D.poids[AUJ] = v; sauver(); rendre(); },
+  retirer: () => { const s = etat.s, st = etapes(s)[etat.pos], j = duJour(s, P[s][st.i]);
+    if (j[st.k]) j[st.k][2] = 0; sauver(); rendre(); },
   valider: () => {
     son(true);
     const s = etat.s, E = etapes(s), st = E[etat.pos], e = P[s][st.i];
     const kg = num(document.getElementById('kg').value), r = Math.round(num(document.getElementById('r').value));
     if (!r) return document.getElementById('r').focus();
+    const deja = faite(s, st);
     const j = ((D.log[cle(s, e)] ||= {})[AUJ] ||= []);
     for (let k = 0; k <= st.k; k++) j[k] ||= ['', '', 0];
-    j[st.k] = [String(kg), String(r), 1]; sauver();
-    navigator.vibrate?.(20);
+    j[st.k] = [String(kg), String(r), 1];
+    const m = (D.seances[AUJ + '|' + s] ||= { t0: Date.now() }); m.t1 = Date.now();
+    sauver(); navigator.vibrate?.(20);
     let n = -1;
     for (let d = 1; d <= E.length; d++) { const c = (etat.pos + d) % E.length; if (!faite(s, E[c])) { n = c; break; } }
-    if (n < 0) return aller('fin', {}, true);
+    if (n < 0) return aller('bilan', { d: AUJ }, true);
     aller('exo', { pos: n }, true);
-    if (st.repos) { const nx = E[n], ne = P[s][nx.i]; ouvrirRepos(st.repos, `${ne.n}, série ${nx.k + 1}`); }
+    if (st.repos && !deja) { const nx = E[n], ne = P[s][nx.i]; ouvrirRepos(st.repos, `${ne.n}, série ${nx.k + 1}`); }
   },
 };
-app.addEventListener('click', ev => { const b = ev.target.closest('[data-a]'); if (b) ACTIONS[b.dataset.a](b); });
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-a]'); if (b && ACTIONS[b.dataset.a]) ACTIONS[b.dataset.a](b); });
 
 // ---------- repos ----------
 const R = document.getElementById('repos'), ARC = document.getElementById('arc'), C = 2 * Math.PI * 112;
