@@ -161,6 +161,7 @@
   </div>
 </div>
 
+<script src="carnet.js"></script>
 <script>
 // leg : +5 kg au lieu de +2,5 kg. petit : échec sur la dernière série en semaines 5-7.
 // ss : superset (les 2 exercices qui se suivent avec le même numéro). lest : le poids noté est le lest. barre : calcul des disques.
@@ -230,6 +231,7 @@ const PRENOMS = ['Many', 'Hannibal'];
 const ORPHELIN = PROF.actif && !PRENOMS.includes(PROF.actif) ? PROF.actif : '';
 const CLE = cleDe(PROF.actif);
 const D = JSON.parse((PROF.actif && localStorage.getItem(CLE)) || '{"log":{}}');
+const CARNET = (window.CARNET || {})[PROF.actif] || {}; // séances d'avant l'app, en lecture seule
 D.log ||= {}; D.notes ||= {}; D.seances ||= {}; D.poids ||= {};
 const sauver = () => PROF.actif && localStorage.setItem(CLE, JSON.stringify(D));
 const jour = d => d.toLocaleDateString('sv-SE');
@@ -263,7 +265,9 @@ const faitsDu = (s, e, d) => setsDu(s, e, d).filter(x => faitSet(x, d));
 function derniere(s, e) {
   const h = D.log[cle(s, e)] || {};
   const ds = Object.keys(h).filter(d => d < AUJ && h[d].some(x => faitSet(x, d))).sort();
-  return ds.length ? h[ds.at(-1)].filter(x => faitSet(x, '0')) : null;
+  if (ds.length) return h[ds.at(-1)].filter(x => faitSet(x, '0'));
+  const c = Object.keys(CARNET[e.id] || {}).sort(); // rien dans l'app : on part du carnet
+  return c.length ? CARNET[e.id][c.at(-1)] : null;
 }
 const resume = sets => sets.map(x => (num(x[0]) ? kgFr(num(x[0])) + ' kg × ' : '') + x[1]).join(', ');
 const tropFacile = (e, prec) => prec && prec.length >= e.s && prec.slice(0, e.s).every(x => +x[1] >= e.hi);
@@ -313,12 +317,14 @@ function statsSeance(s, d) {
   return { series, volume, ex, duree: m && m.t1 > m.t0 ? duree(m.t1 - m.t0) : null };
 }
 // historique d'un mouvement, toutes séances confondues (le leg curl de A et de C, par exemple)
+const carnet = new Set(); // dates qui viennent du carnet
 function histoMouvement(id) {
-  const par = {};
+  const par = {}; carnet.clear();
   for (const [k, h] of Object.entries(D.log)) {
     if (k.split('.')[1] !== id) continue;
     for (const [d, sets] of Object.entries(h)) { const f = sets.filter(x => faitSet(x, d)); if (f.length) (par[d] ||= []).push(...f); }
   }
+  for (const [d, sets] of Object.entries(CARNET[id] || {})) if (!par[d]) { par[d] = sets.slice(); carnet.add(d); }
   return Object.keys(par).sort().map(d => ({ d, sets: par[d] }));
 }
 const MOUVEMENTS = (() => { const vu = new Map(); for (const s of ORDRE) for (const e of P[s]) if (!vu.has(e.id)) vu.set(e.id, e); return [...vu.values()]; })();
@@ -614,7 +620,7 @@ function vMouv() {
     ${h.length ? `<div class="graph"><p class="titre">${avecKg ? 'Charge max par séance (kg)' : 'Reps max par séance'}</p>
       <p class="lecture">Touche la courbe pour lire une séance.</p>${graphique(pts, avecKg ? 'kg' : 'reps')}</div>
       <h2>Détail</h2>
-      ${h.slice().reverse().map(x => `<div class="ligne"><span class="txt"><b>${dateFr(x.d)}</b><small>${resume(x.sets)}</small></span></div>`).join('')}`
+      ${h.slice().reverse().map(x => `<div class="ligne"><span class="txt"><b>${dateFr(x.d)}</b><small>${resume(x.sets)}${carnet.has(x.d) ? ', carnet' : ''}</small></span></div>`).join('')}`
     : '<p class="vide">Pas encore de série sur cet exercice.</p>'}
     <details><summary>Technique</summary><ul>${(TECH[e.id] || []).map(t => `<li>${t}</li>`).join('')}</ul></details>
   </div>`;
