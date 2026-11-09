@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2b5d34">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Muscu">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Muscu</title>
+<style>
+  :root { --vert:#2b5d34; --vert2:#3c8f49; --fond:#eef5e7; --bord:#d9e4d2; --texte:#333; --gris:#6b6b6b; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",-apple-system,Arial,sans-serif; color:var(--texte); background:#fff; padding-bottom:84px; }
+  header { position:sticky; top:0; z-index:2; background:var(--vert); color:#fff; padding:env(safe-area-inset-top) 12px 8px; }
+  .onglets { display:flex; gap:6px; padding-top:10px; }
+  .onglets button { flex:1; font:inherit; font-size:16px; font-weight:600; padding:10px 0; border:0; border-radius:6px; background:rgba(255,255,255,.15); color:#fff; }
+  .onglets button[aria-selected="true"] { background:#fff; color:var(--vert); }
+  #semaine { margin:8px 2px 0; font-size:14px; line-height:1.35; }
+  main { padding:4px 12px; max-width:640px; margin:0 auto; }
+  .ex { border-bottom:1px solid var(--bord); padding:14px 0; }
+  .ex h2 { font-size:17px; margin:0 0 2px; }
+  .ss { font-size:13px; color:var(--vert2); font-weight:600; }
+  .info { font-size:14px; color:var(--gris); margin:2px 0 8px; }
+  .astuce { font-size:14px; background:var(--fond); border-left:3px solid var(--vert2); padding:6px 8px; margin:6px 0 8px; }
+  .serie { display:grid; grid-template-columns:62px 1fr 1fr; gap:8px; align-items:center; margin:6px 0; }
+  .serie span { font-size:14px; color:var(--gris); }
+  input { width:100%; font:inherit; font-size:16px; padding:9px 8px; border:1px solid #b9c9b0; border-radius:6px; }
+  input:focus, button:focus-visible { outline:2px solid var(--vert2); outline-offset:1px; }
+  .repos { font:inherit; font-size:14px; padding:6px 10px; border:1px solid var(--vert2); background:#fff; color:var(--vert); border-radius:6px; margin-top:4px; }
+  #minuteur { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:1px solid var(--bord); padding:10px 12px calc(10px + env(safe-area-inset-bottom)); display:flex; gap:6px; align-items:center; }
+  #minuteur output { font-size:22px; font-weight:700; min-width:64px; font-variant-numeric:tabular-nums; }
+  #minuteur output.fini { color:#b3261e; }
+  #minuteur button { flex:1; font:inherit; font-size:15px; padding:9px 0; border:1px solid var(--bord); background:var(--fond); border-radius:6px; color:var(--texte); }
+  .prog h2 { font-size:17px; margin:18px 0 6px; }
+  .prog p, .prog li { font-size:15px; line-height:1.45; }
+  .prog .actions button, .prog label.bouton { display:inline-block; font:inherit; font-size:15px; padding:9px 12px; margin:4px 6px 4px 0; border:1px solid var(--vert2); border-radius:6px; background:#fff; color:var(--vert); }
+  @media (prefers-reduced-motion:no-preference) { .onglets button { transition:background .15s; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="onglets" role="tablist">
+    <button role="tab" data-s="A">A</button>
+    <button role="tab" data-s="B">B</button>
+    <button role="tab" data-s="C">C</button>
+    <button role="tab" data-s="P">Plan</button>
+  </div>
+  <p id="semaine"></p>
+</header>
+<main id="app"></main>
+<div id="minuteur">
+  <output id="chrono">0:00</output>
+  <button data-t="60">1:00</button><button data-t="90">1:30</button><button data-t="120">2:00</button><button data-t="180">3:00</button>
+</div>
+
+<script>
+// leg = +5 kg au lieu de +2,5 kg ; petit = échec sur la dernière série en semaines 5-7
+const P = {
+  A: [
+    { id:'squat', n:'Squat barre', s:3, lo:6, hi:8, repos:180, leg:1 },
+    { id:'couche', n:'Développé couché barre', s:3, lo:6, hi:8, repos:180 },
+    { id:'tractions', n:'Tractions', s:4, lo:6, hi:10, repos:120 },
+    { id:'legcurl', n:'Leg curl assis', s:3, lo:10, hi:12, repos:90, leg:1 },
+    { id:'elev', n:'Élévations latérales', s:3, lo:12, hi:20, repos:60, petit:1 },
+    { id:'curlinc', n:'Curl incliné', s:3, lo:10, hi:15, ss:'Superset avec extension triceps', petit:1 },
+    { id:'tri', n:'Extension triceps poulie au-dessus de la tête', s:3, lo:10, hi:15, ss:'Superset avec curl incliné', petit:1 },
+  ],
+  B: [
+    { id:'presse', n:'Presse à cuisses', s:3, lo:10, hi:12, repos:120, leg:1 },
+    { id:'inclhalt', n:'Développé incliné haltères', s:3, lo:8, hi:12, repos:120 },
+    { id:'row', n:'Row machine poitrine appuyée', s:4, lo:8, hi:12, repos:120 },
+    { id:'hip', n:'Hip thrust', s:3, lo:8, hi:12, repos:120, leg:1 },
+    { id:'dips', n:'Dips lestés', s:3, lo:6, hi:10, repos:120 },
+    { id:'rfly', n:'Reverse fly', s:3, lo:15, hi:20, ss:'Superset avec mollets debout' },
+    { id:'mollets', n:'Mollets debout', s:3, lo:15, hi:20, ss:'Superset avec reverse fly', leg:1, petit:1 },
+  ],
+  C: [
+    { id:'bulgare', n:'Fentes bulgares haltères (par jambe)', s:3, lo:8, hi:12, repos:120, leg:1 },
+    { id:'chest', n:'Chest press machine', s:3, lo:8, hi:12, repos:120 },
+    { id:'tirage', n:'Tirage vertical', s:4, lo:8, hi:12, repos:120 },
+    { id:'legext', n:'Leg extension', s:3, lo:12, hi:15, ss:'Superset avec leg curl assis', leg:1, petit:1 },
+    { id:'legcurl', n:'Leg curl assis', s:3, lo:12, hi:15, ss:'Superset avec leg extension', leg:1 },
+    { id:'epaules', n:'Développé épaules machine', s:2, lo:8, hi:12, repos:120 },
+    { id:'elev', n:'Élévations latérales', s:3, lo:12, hi:15, ss:'Superset avec curl marteau', petit:1 },
+    { id:'marteau', n:'Curl marteau', s:3, lo:12, hi:15, ss:'Superset avec élévations latérales', petit:1 },
+  ],
+};
+
+const CLE = 'muscu';
+const D = JSON.parse(localStorage.getItem(CLE) || '{"log":{}}');
+const sauver = () => localStorage.setItem(CLE, JSON.stringify(D));
+const jour = d => d.toLocaleDateString('sv-SE'); // AAAA-MM-JJ en heure locale
+const AUJ = jour(new Date());
+function lundi(d) { const x = new Date(d); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return jour(x); }
+if (!D.debut) { D.debut = lundi(new Date()); sauver(); }
+
+function semaine() {
+  const n = Math.floor((new Date(AUJ) - new Date(D.debut)) / 864e5 / 7);
+  return { cycle: Math.floor(Math.max(n, 0) / 8) + 1, s: (Math.max(n, 0) % 8) + 1 };
+}
+const REGLE = s => s <= 2 ? "arrête-toi à 2 reps de l'échec."
+  : s <= 4 ? "arrête-toi à 1 rep de l'échec."
+  : s <= 7 ? "1 rep avant l'échec. Échec sur la dernière série des petits exercices."
+  : "semaine allégée : moitié moins de séries, mêmes charges.";
+
+function derniere(cle) {
+  const h = D.log[cle] || {};
+  const dates = Object.keys(h).filter(d => d < AUJ && h[d].some(x => x[1])).sort();
+  return dates.length ? h[dates.at(-1)] : null;
+}
+const fmt = sets => sets.filter(x => x[1]).map(x => (x[0] ? x[0] + 'kg ' : '') + x[1]).join(' / ');
+
+function afficher(sess) {
+  document.querySelectorAll('.onglets button').forEach(b => b.setAttribute('aria-selected', b.dataset.s === sess));
+  const { cycle, s } = semaine();
+  document.getElementById('semaine').textContent = `Cycle ${cycle}, semaine ${s}/8 : ${REGLE(s)}`;
+  const app = document.getElementById('app');
+  if (sess === 'P') return programme(app);
+  app.innerHTML = '';
+  for (const e of P[sess]) {
+    const cle = sess + '.' + e.id;
+    const nb = s === 8 ? Math.ceil(e.s / 2) : e.s;
+    const prec = derniere(cle);
+    const auj = (D.log[cle] || {})[AUJ] || [];
+    const div = document.createElement('section');
+    div.className = 'ex';
+    let html = (e.ss ? `<div class="ss">${e.ss}</div>` : '') +
+      `<h2>${e.n}</h2><p class="info">${nb} × ${e.lo}-${e.hi}` + (e.repos ? `, repos ${e.repos >= 120 ? e.repos / 60 + ' min' : e.repos === 90 ? '1 min 30' : '1 min'}` : '') +
+      (s >= 5 && s <= 7 && e.petit ? ', dernière série à l\'échec' : '') + '</p>';
+    if (prec) {
+      html += `<p class="info">Dernière fois : ${fmt(prec)}</p>`;
+      if (prec.length >= e.s && prec.slice(0, e.s).every(x => +x[1] >= e.hi))
+        html += `<p class="astuce">Haut de la fourchette atteint partout : ajoute ${e.leg ? '5' : '2,5'} kg.</p>`;
+    }
+    for (let i = 0; i < nb; i++) {
+      const [kg, r] = auj[i] || [], [pkg, pr] = (prec || [])[i] || [];
+      html += `<div class="serie"><span>Série ${i + 1}</span>
+        <input inputmode="decimal" aria-label="${e.n} série ${i + 1} kg" placeholder="${pkg || 'kg'}" value="${kg || ''}" data-i="${i}" data-k="0">
+        <input inputmode="numeric" aria-label="${e.n} série ${i + 1} reps" placeholder="${pr ? pr + ' reps' : 'reps'}" value="${r || ''}" data-i="${i}" data-k="1"></div>`;
+    }
+    if (e.repos) html += `<button class="repos" data-t="${e.repos}">Lancer le repos</button>`;
+    div.innerHTML = html;
+    div.addEventListener('input', ev => {
+      const t = ev.target; if (!t.dataset.k) return;
+      const h = (D.log[cle] ||= {}); const j = (h[AUJ] ||= []);
+      (j[t.dataset.i] ||= ['', ''])[t.dataset.k] = t.value.replace(',', '.');
+      for (let k = 0; k < j.length; k++) j[k] ||= ['', ''];
+      sauver();
+    });
+    app.appendChild(div);
+  }
+}
+
+function programme(app) {
+  app.innerHTML = `<div class="prog">
+  <h2>Organisation</h2>
+  <p>Lundi A, mercredi B, vendredi C. Un jour de repos entre deux séances.<br>Échauffement : 5 min de cardio, puis 2 séries légères sur le premier exercice.</p>
+  <h2>Plan sur 8 semaines</h2>
+  <ul><li>Semaines 1-2 : arrête-toi à 2 reps de l'échec.</li>
+  <li>Semaines 3-4 : arrête-toi à 1 rep de l'échec.</li>
+  <li>Semaines 5-7 : 1 rep avant l'échec, mais échec sur la dernière série des petits exercices (élévations, curls, triceps, mollets, leg extension).</li>
+  <li>Semaine 8 : moitié moins de séries, mêmes charges.</li>
+  <li>Ensuite, nouveau cycle avec les charges gagnées.</li></ul>
+  <h2>Règles</h2>
+  <ol><li>Quand toutes les séries sont en haut de la fourchette : +2,5 kg sur le haut du corps, +5 kg sur les jambes.</li>
+  <li>Descends en 2-3 secondes et va bien en bas du mouvement.</li>
+  <li>Note chaque série.</li>
+  <li>Mêmes exercices et mêmes machines pendant les 8 semaines.</li></ol>
+  <h2>Réglages</h2>
+  <p><label>Début du cycle 1 (un lundi) <input type="date" id="debut" value="${D.debut}"></label></p>
+  <p>Les données restent sur ce téléphone. Fais une sauvegarde de temps en temps.</p>
+  <div class="actions"><button id="export">Sauvegarder mes données</button>
+  <label class="bouton">Restaurer une sauvegarde<input type="file" id="import" accept=".json,application/json" hidden></label></div>
+  </div>`;
+  app.querySelector('#debut').onchange = ev => { D.debut = lundi(ev.target.value); sauver(); afficher('P'); };
+  app.querySelector('#export').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(D)], { type: 'application/json' }));
+    a.download = `muscu-${AUJ}.json`; a.click();
+  };
+  app.querySelector('#import').onchange = async ev => {
+    try { const x = JSON.parse(await ev.target.files[0].text()); if (!x.log) throw 0;
+      localStorage.setItem(CLE, JSON.stringify(x)); location.reload();
+    } catch { alert("Ce fichier n'est pas une sauvegarde Muscu."); }
+  };
+}
+
+// Minuteur de repos (basé sur l'heure de fin, juste même si l'écran s'est éteint)
+let fin = 0, tic;
+function lancer(sec) {
+  fin = Date.now() + sec * 1000; clearInterval(tic);
+  const o = document.getElementById('chrono'); o.classList.remove('fini');
+  const maj = () => {
+    const r = Math.max(0, Math.round((fin - Date.now()) / 1000));
+    o.textContent = Math.floor(r / 60) + ':' + String(r % 60).padStart(2, '0');
+    if (!r) { clearInterval(tic); o.classList.add('fini'); navigator.vibrate?.([300, 150, 300]); }
+  };
+  maj(); tic = setInterval(maj, 250);
+}
+document.addEventListener('click', ev => { const t = ev.target.closest('[data-t]'); if (t) lancer(+t.dataset.t); });
+document.querySelectorAll('.onglets button').forEach(b => b.onclick = () => { afficher(b.dataset.s); scrollTo(0, 0); });
+
+afficher({ 1: 'A', 3: 'B', 5: 'C' }[new Date().getDay()] || 'A');
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
