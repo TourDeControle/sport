@@ -225,6 +225,9 @@ const DISQUES = [25, 20, 15, 10, 5, 2.5, 1.25], BARRE = 20;
 const PROF = JSON.parse(localStorage.getItem('muscu:profils') || '{"actif":"","liste":[]}');
 const sauverProfils = () => localStorage.setItem('muscu:profils', JSON.stringify(PROF));
 const cleDe = nom => 'muscu:p:' + nom;
+const PRENOMS = ['Many', 'Hannibal'];
+// profil tapé à la main avec l'ancienne version : on redemande qui c'est et on déplace ses données
+const ORPHELIN = PROF.actif && !PRENOMS.includes(PROF.actif) ? PROF.actif : '';
 const CLE = cleDe(PROF.actif);
 const D = JSON.parse((PROF.actif && localStorage.getItem(CLE)) || '{"log":{}}');
 D.log ||= {}; D.notes ||= {}; D.seances ||= {}; D.poids ||= {};
@@ -362,7 +365,7 @@ function brancherGraphiques() {
 }
 
 // ---------- navigation ----------
-const etat = { v: PROF.actif ? 'accueil' : 'bienvenue', s:'A', pos:0, d:AUJ, id:'' };
+const etat = { v: PROF.actif && !ORPHELIN ? 'accueil' : 'bienvenue', s:'A', pos:0, d:AUJ, id:'' };
 const RACINES = ['accueil', 'histo', 'progres', 'plan'];
 function aller(v, extra = {}, remplacer = false) {
   Object.assign(etat, { v }, extra);
@@ -375,7 +378,7 @@ history.replaceState({ ...etat }, '');
 const app = document.getElementById('app'), NAV = document.getElementById('nav');
 function rendre() {
   ({ bienvenue:vBienvenue, accueil:vAccueil, seance:vSeance, exo:vExo, bilan:vBilan, histo:vHisto, progres:vProgres, mouv:vMouv, plan:vPlan })[etat.v]();
-  NAV.hidden = !RACINES.includes(etat.v) || !PROF.actif;
+  NAV.hidden = !RACINES.includes(etat.v) || !PROF.actif || !!ORPHELIN;
   NAV.querySelectorAll('.onglet').forEach(b => b.dataset.v === etat.v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   brancherGraphiques();
   eveil(etat.v === 'exo');
@@ -385,7 +388,13 @@ function rendre() {
 function creerProfil(nom) {
   nom = nom.trim().slice(0, 20);
   if (!nom) return "Écris un prénom.";
-  if (PROF.liste.some(x => x.toLowerCase() === nom.toLowerCase())) return "Ce prénom existe déjà sur ce téléphone.";
+  if (ORPHELIN) {
+    const v = localStorage.getItem(cleDe(ORPHELIN));
+    if (v && !localStorage.getItem(cleDe(nom))) localStorage.setItem(cleDe(nom), v);
+    localStorage.removeItem(cleDe(ORPHELIN));
+    PROF.liste = PROF.liste.filter(x => x !== ORPHELIN && x !== nom).concat(nom); PROF.actif = nom; sauverProfils(); return location.reload();
+  }
+  if (PROF.liste.includes(nom)) { PROF.actif = nom; sauverProfils(); return location.reload(); }
   const ancien = localStorage.getItem('muscu'); // données d'avant les profils : elles vont au premier profil créé
   if (!PROF.liste.length && ancien) { localStorage.setItem(cleDe(nom), ancien); localStorage.removeItem('muscu'); }
   PROF.liste.push(nom); PROF.actif = nom; sauverProfils(); location.reload();
@@ -393,11 +402,9 @@ function creerProfil(nom) {
 function vBienvenue() {
   app.innerHTML = `<div class="page">
     <p class="date">${dateFr(AUJ)}</p>
-    <h1>Bienvenue</h1>
-    <p class="sous">Ton prénom sert à séparer tes séances si vous êtes plusieurs sur ce téléphone.</p>
-    <div class="saisie"><input id="prenom" placeholder="Ton prénom" autocomplete="given-name" aria-label="Ton prénom">
-    <button data-a="creer">C'est parti</button></div>
-    <p class="regle" id="erreur"></p>
+    <h1>Qui es-tu ?</h1>
+    <p class="sous">Chacun a ses propres séances et courbes.</p>
+    <div class="actions">${PRENOMS.map(n => `<button class="principal" data-a="choisir" data-n="${n}">${n}</button>`).join('')}</div>
   </div>`;
 }
 
@@ -413,7 +420,7 @@ function vAccueil() {
   const aSauver = seancesFaites().length >= 3 && (!D.export || plusJours(D.export, 14) < AUJ);
   app.innerHTML = `<div class="page">
     <div class="haut"><span class="date" style="margin:0">${dateFr(AUJ)}</span>
-      <button class="mini" data-a="onglet" data-v="plan">${PROF.actif}${PROF.liste.length > 1 ? ' ▾' : ''}</button></div>
+      <button class="mini" data-a="onglet" data-v="plan">${PROF.actif} ▾</button></div>
     <div class="hero">
       <p class="sur">${finie ? 'Terminée aujourd\'hui' : commencee(s) ? 'En cours' : 'Prochaine séance'}</p>
       <h1>Séance ${s}</h1>
@@ -630,11 +637,9 @@ function vPlan() {
     <li>Descends en 2-3 secondes et va bien en bas du mouvement.</li>
     <li>Mêmes exercices et mêmes machines pendant les 8 semaines.</li></ol>
     <h2>Profils sur ce téléphone</h2>
-    <p>Chaque personne a ses propres séances, courbes et notes. Si chacun utilise son téléphone, un seul profil suffit.</p>
-    ${PROF.liste.map(n => `<button class="ligne" data-a="profil" data-n="${n}"><span class="rond ${n === PROF.actif ? 'ok' : ''}">${n === PROF.actif ? '✓' : n[0].toUpperCase()}</span>
+    <p>Si vous partagez un téléphone, touche ton prénom avant de commencer. Chacun garde ses séances, courbes et notes.</p>
+    ${PRENOMS.map(n => `<button class="ligne" data-a="profil" data-n="${n}"><span class="rond ${n === PROF.actif ? 'ok' : ''}">${n === PROF.actif ? '✓' : n[0].toUpperCase()}</span>
       <span class="txt"><b>${n}</b><small>${n === PROF.actif ? 'Profil utilisé' : 'Toucher pour passer sur ce profil'}</small></span></button>`).join('')}
-    <div class="saisie"><input id="nouveau" placeholder="Ajouter une personne" aria-label="Prénom de la nouvelle personne"><button data-a="ajouter">Ajouter</button></div>
-    <p class="regle" id="erreur"></p>
     <h2>Réglages</h2>
     <p>Début du cycle 1 (un lundi)<input type="date" id="debut" value="${D.debut}"></p>
     <p>Tes séries restent sur ce téléphone. Fais une sauvegarde de temps en temps${D.export ? ` (dernière le ${dateFr(D.export, { day:'numeric', month:'long' })})` : ''}.</p>
@@ -666,9 +671,9 @@ function textePartage() {
   return [`Progrès de ${PROF.actif}, cycle ${cycle} semaine ${s} : ${l.length} séance${l.length > 1 ? 's' : ''}`, ...lignes].join(String.fromCharCode(10));
 }
 const ACTIONS = {
-  creer: () => { const err = creerProfil(document.getElementById('prenom').value); if (err) document.getElementById('erreur').textContent = err; },
-  ajouter: () => { const err = creerProfil(document.getElementById('nouveau').value); if (err) document.getElementById('erreur').textContent = err; },
-  profil: b => { if (b.dataset.n === PROF.actif) return; PROF.actif = b.dataset.n; sauverProfils(); location.reload(); },
+  choisir: b => creerProfil(b.dataset.n),
+  profil: b => { const n = b.dataset.n; if (n === PROF.actif) return;
+    if (!PROF.liste.includes(n)) PROF.liste.push(n); PROF.actif = n; sauverProfils(); location.reload(); },
   partager: async () => { const t = textePartage();
     try { if (navigator.share) await navigator.share({ text: t }); else { await navigator.clipboard.writeText(t); alert('Copié, tu peux le coller dans un message.'); } } catch {} },
   onglet: b => aller(b.dataset.v),
