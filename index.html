@@ -115,6 +115,9 @@
   .onglet { flex:1; max-width:130px; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0; color:var(--gris); font-size:12px; font-weight:600; }
   .onglet svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
   .onglet[aria-current="page"] { color:var(--vert); }
+  .onglet[hidden] { display:none; }
+  .sem-t { display:flex; justify-content:space-between; margin:18px 4px 8px; color:var(--gris); font-size:14px; font-weight:600; }
+  .sem-t.ici { color:var(--vert); }
 
   #repos { position:fixed; inset:0; z-index:10; background:rgba(11,14,12,.98); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:24px; }
   #repos[hidden] { display:none; }
@@ -143,6 +146,7 @@
   <button class="onglet" data-a="onglet" data-v="accueil"><svg viewBox="0 0 24 24"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>Séance</button>
   <button class="onglet" data-a="onglet" data-v="histo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Historique</button>
   <button class="onglet" data-a="onglet" data-v="progres"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Progrès</button>
+  <button class="onglet" data-a="onglet" data-v="course" id="ongCourse" hidden><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2.5 4L17 12H5"/></svg>Course</button>
   <button class="onglet" data-a="onglet" data-v="plan"><svg viewBox="0 0 24 24"><path d="M7 3h10v18H7zM10 8h4M10 12h4M10 16h2"/></svg>Plan</button>
 </nav>
 
@@ -162,6 +166,7 @@
 </div>
 
 <script src="carnet.js"></script>
+<script src="course.js"></script>
 <script>
 // leg : +5 kg au lieu de +2,5 kg. petit : échec sur la dernière série en semaines 5-7.
 // ss : superset (les 2 exercices qui se suivent avec le même numéro). lest : le poids noté est le lest. barre : calcul des disques.
@@ -334,6 +339,35 @@ function disques(total) {
   return { out, reste: Math.round(r * 100) / 100 };
 }
 
+// ---------- course à pied (profil Hannibal seulement, plan dans course.js) ----------
+const COURSE = PROF.actif === 'Hannibal' && window.COURSE_PLAN || null;
+D.course ||= { faits:{}, tests:{} };
+// allures de Daniels et Gilbert à partir du dernier 5 km (mêmes formules que montre/plan_course.py)
+const vo2 = v => -4.6 + .182258 * v + .000104 * v * v;
+const fracT = t => .8 + .1894393 * Math.exp(-.012778 * t) + .2989558 * Math.exp(-.1932605 * t);
+const vdot = (d, s) => vo2(d / (s / 60)) / fracT(s / 60);
+const vit = o => { const a = .000104, b = .182258, c = -4.6 - o; return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a); };
+function chrono5k(V) { let lo = 600, hi = 3600; for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; vdot(5000, m) > V ? lo = m : hi = m; } return lo; }
+function allures(t) { const V = vdot(5000, t), sk = p => 60000 / vit(p * V), a5 = Math.max(240, chrono5k(V + 2) / 5);
+  return { E:[sk(.62), sk(.70)], T:[sk(.88) + 5, sk(.88) - 5], I:[sk(.975) + 5, sk(.975) - 5], A5:[a5 + 4, a5 - 4] }; }
+const mmss = s => { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const dernierTest = () => Object.values(D.course.tests).sort((a, b) => a.d.localeCompare(b.d)).at(-1) || { s: 1440, d: '' };
+const ALLURE_NOM = { E:'Footing facile', T:'Seuil', I:'Fractionné', A5:'Allure 5 km visée' };
+const ALLURE_AIDE = { E:'Tu peux parler en courant.', T:'Dur mais tenable 20 à 30 min.', I:'Très dur, 3 à 5 min max par effort.', A5:'Le rythme du prochain chrono que tu vises.' };
+const tempsTxt = t => t < 60 ? t + ' s' : Math.floor(t / 60) + ' min' + (t % 60 ? ' ' + String(t % 60).padStart(2, '0') : '');
+const distTxt = d => d >= 1000 ? kgFr(d / 1000) + ' km' : d + ' m';
+function pasTxt(p, al) {
+  const dur = p.d ? distTxt(p.d) : tempsTxt(p.t), base = p.n.startsWith(dur) ? p.n : p.n + ' ' + dur;
+  const a = p.a ? ` à ${mmss(al[p.a][1])}-${mmss(al[p.a][0])} /km` : p.n === 'Ligne droite' ? ', vite et relâché' : '';
+  return base + a;
+}
+function dureeRun(x, al) { // minutes, estimées sur l'allure la plus lente de chaque étape
+  const t = p => p.t || p.d / 1000 * (p.a ? al[p.a][0] : dernierTest().s / 5);
+  return Math.round(x.pas.reduce((s, p) => s + (p.rep ? p.rep * p.pas.reduce((u, q) => u + t(q), 0) : t(p)), 0) / 60);
+}
+const prochaineCourse = () => COURSE && COURSE.find(x => x.d >= lundi(AUJ) && !D.course.faits[x.id]);
+const nomMontre = x => `S${String(x.sem).padStart(2, '0')} ${x.id.endsWith('m') ? 'mar' : 'dim'} ${x.titre.replace('×', 'x').replace('Objectif : ', '')}`;
+
 // ---------- graphique (une seule série, lecture au doigt) ----------
 function graphique(pts, unite) {
   if (!pts.length) return '';
@@ -372,7 +406,7 @@ function brancherGraphiques() {
 
 // ---------- navigation ----------
 const etat = { v: PROF.actif && !ORPHELIN ? 'accueil' : 'bienvenue', s:'A', pos:0, d:AUJ, id:'' };
-const RACINES = ['accueil', 'histo', 'progres', 'plan'];
+const RACINES = ['accueil', 'histo', 'progres', 'course', 'plan'];
 function aller(v, extra = {}, remplacer = false) {
   Object.assign(etat, { v }, extra);
   history[remplacer ? 'replaceState' : 'pushState']({ ...etat }, '');
@@ -383,7 +417,8 @@ history.replaceState({ ...etat }, '');
 
 const app = document.getElementById('app'), NAV = document.getElementById('nav');
 function rendre() {
-  ({ bienvenue:vBienvenue, accueil:vAccueil, seance:vSeance, exo:vExo, bilan:vBilan, histo:vHisto, progres:vProgres, mouv:vMouv, plan:vPlan })[etat.v]();
+  ({ bienvenue:vBienvenue, accueil:vAccueil, seance:vSeance, exo:vExo, bilan:vBilan, histo:vHisto, progres:vProgres, mouv:vMouv, plan:vPlan, course:vCourse, run:vRun })[etat.v]();
+  document.getElementById('ongCourse').hidden = !COURSE;
   NAV.hidden = !RACINES.includes(etat.v) || !PROF.actif || !!ORPHELIN;
   NAV.querySelectorAll('.onglet').forEach(b => b.dataset.v === etat.v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   brancherGraphiques();
@@ -434,6 +469,8 @@ function vAccueil() {
       <ul class="apercu">${P[s].map(e => `<li>${e.n}</li>`).join('')}</ul>
       ${bouton}
     </div>
+    ${(x => x ? `<h2>Course à pied</h2><button class="ligne" data-a="run" data-id="${x.id}"><span class="rond">${x.test ? '5k' : x.sem}</span>
+      <span class="txt"><b>${x.titre}</b><small>${x.d === AUJ ? 'Aujourd\'hui' : dateFr(x.d)}, environ ${dureeRun(x, allures(dernierTest().s))} min</small></span><span class="chev">›</span></button>` : '')(prochaineCourse())}
     <div class="carte">
       <b>Cette semaine : ${nbSem} séance${nbSem > 1 ? 's' : ''} sur 3</b>
       <div class="jours">${jours}</div>
@@ -667,6 +704,69 @@ function vPlan() {
   };
 }
 
+function vCourse() {
+  const t = dernierTest(), al = allures(t.s), lun = lundi(AUJ), fin = COURSE.at(-1).d;
+  const allur = ['E', 'T', 'I', 'A5'].map(k => `<div class="ligne"><span class="txt"><b>${ALLURE_NOM[k]} : ${mmss(al[k][1])} à ${mmss(al[k][0])} /km</b><small>${ALLURE_AIDE[k]}</small></span></div>`).join('');
+  let semaines = '';
+  for (let w = 1; w <= COURSE.at(-1).sem; w++) {
+    const l = COURSE.filter(x => x.sem === w), ici = lun === plusJours(l[0].d, -1);
+    semaines += `<p class="sem-t ${ici ? 'ici' : ''}"><span>Semaine ${w}${ici ? ', cette semaine' : ''}</span><span>${l[0].allegee ? 'allégée' : ''}</span></p>` + l.map(x => { const f = D.course.faits[x.id], te = D.course.tests[x.id];
+      return `<button class="ligne" data-a="run" data-id="${x.id}"><span class="rond ${f ? 'ok' : ''}">${f ? '✓' : x.test ? '5k' : x.id.endsWith('m') ? 'Ma' : 'Di'}</span>
+        <span class="txt"><b>${x.titre}</b><small>${dateFr(x.d, { weekday:'long', day:'numeric', month:'short' })}${te ? ', ' + mmss(te.s) : ''}</small></span><span class="chev">›</span></button>`; }).join('');
+  }
+  app.innerHTML = `<div class="page">
+    <h1>Course</h1>
+    <p class="sous">5 km sous 20 min le ${dateFr(fin, { weekday:'long', day:'numeric', month:'long' })}. 2 sorties par semaine, le mardi et le dimanche.</p>
+    <div class="tuiles">
+      <div class="tuile"><b>${mmss(t.s)}</b><span>${t.d ? 'dernier 5 km' : '5 km estimé'}</span></div>
+      <div class="tuile"><b>${mmss(t.s / 5)}</b><span>allure /km</span></div>
+      <div class="tuile"><b>4:00</b><span>objectif /km</span></div>
+    </div>
+    ${t.d ? '' : '<p class="info">Allures calculées sur environ 24 min. Le test du dimanche 15 novembre les recale sur ton vrai chrono.</p>'}
+    ${Math.round(t.s) !== window.COURSE_FIT ? `<p class="info conseil">Ta montre a encore les allures d'un 5 km en ${mmss(window.COURSE_FIT)}. Il faut regénérer les fichiers avec ton chrono de ${mmss(t.s)}.</p>` : ''}
+    <h2>Tes allures</h2>${allur}
+    <details><summary>Mettre les séances sur la montre</summary><ul>
+      <li>Branche la Forerunner 255 à un ordinateur avec son câble.</li>
+      <li>Ouvre Forerunner 255, puis le stockage interne, puis GARMIN, puis NewFiles.</li>
+      <li>Copie dedans les fichiers .fit du dossier sport\\montre\\fit (une séance par fichier, les 40 d'un coup).</li>
+      <li>Débranche. Sur la montre : START, Course à pied, UP, Entraînement, Entraînements, puis la séance du jour (S01 mar, S01 dim…), puis Faire entraînement.</li>
+      <li>La montre affiche chaque étape et bipe si tu sors de l'allure.</li></ul></details>
+    <details><summary>Règles</summary><ul>
+      <li>Le footing doit rester facile : si tu ne peux plus parler, ralentis.</li>
+      <li>Muscu lundi, mercredi, vendredi. Si les jambes sont lourdes le mardi après la séance A, décale le fractionné au jeudi.</li>
+      <li>Jamais deux jours de course d'affilée. Une séance ratée ne se rattrape pas, on reprend la suivante.</li>
+      <li>Un test toutes les 5 semaines : tes allures se recalent sur le nouveau chrono.</li>
+      <li>Semaines 5, 10 et 15 allégées : on récupère pour mieux progresser.</li></ul></details>
+    ${semaines}
+  </div>`;
+}
+
+function vRun() {
+  const x = COURSE.find(y => y.id === etat.rid), al = allures(dernierTest().s), f = D.course.faits[x.id], te = D.course.tests[x.id];
+  const cleP = x.pas.flatMap(p => p.rep ? p.pas : [p]).find(p => ['I', 'A5', 'T'].includes(p.a));
+  const but = x.objectif ? 'Le jour J. Pars à 4:00 /km, accélère sur le dernier kilomètre.'
+    : x.test ? 'Test : le 5 km le plus rapide possible, à allure régulière. Tes allures se recalent sur ce chrono.'
+    : cleP ? BUTS[cleP.a] : 'Footing facile pour récupérer et construire le fond. Les lignes droites gardent les jambes vives.';
+  const etapesTxt = x.pas.map((p, i) => `<div class="ligne"><span class="rond">${i + 1}</span><span class="txt"><b>${p.rep
+    ? `${p.rep} × ${pasTxt(p.pas[0], al)}` : pasTxt(p, al)}</b>${p.rep ? `<small>récupération : ${pasTxt(p.pas[1], al).toLowerCase()} entre chaque</small>` : ''}</span></div>`).join('');
+  app.innerHTML = `<div class="page">
+    <div class="haut"><button class="retour" data-a="retour">‹ Retour</button><span class="compteur">Semaine ${x.sem} sur ${COURSE.at(-1).sem}</span></div>
+    <p class="sur">${dateFr(x.d)}${x.allegee ? ', semaine allégée' : ''}</p>
+    <h1>${x.titre}</h1>
+    <p class="sous">Environ ${dureeRun(x, al)} min</p>
+    <p class="info conseil">${but}</p>
+    ${etapesTxt}
+    <p class="info"><span>Sur la montre :</span> ${nomMontre(x)}</p>
+    ${x.test ? `<div class="graph"><p class="titre">Ton chrono sur 5 km</p><p class="lecture">${te ? 'Enregistré : ' + mmss(te.s) + ' (' + mmss(te.s / 5) + ' /km)' : 'Par exemple 23:40'}</p>
+      <div class="saisie"><input id="chrono5" inputmode="numeric" placeholder="mm:ss" value="${te ? mmss(te.s) : ''}" aria-label="Chrono en minutes et secondes">
+      <button data-a="runChrono">Enregistrer</button></div></div>` : ''}
+    ${f ? `<div class="actions-exo"><span class="compteur">Fait le ${dateFr(f, { day:'numeric', month:'long' })}</span><button class="retirer" data-a="runAnnuler">Annuler</button></div>` : ''}
+  </div>
+  ${f || x.test ? '' : '<div class="bas"><button class="principal" data-a="runFait">C\'est fait</button></div>'}`;
+}
+const BUTS = { I:'Fractionné : fait monter ta VO2 max, la clé du 5 km. Les récupérations se font en trottinant.', T:'Seuil : apprendre à tenir vite plus longtemps. Dur mais contrôlé.',
+  A5:'Allure 5 km visée : caler le rythme de la course pour qu\'il devienne naturel.' };
+
 // ---------- actions ----------
 const premiereAFaire = s => etapes(s).findIndex(st => !faite(s, st));
 function textePartage() {
@@ -683,6 +783,13 @@ const ACTIONS = {
   partager: async () => { const t = textePartage();
     try { if (navigator.share) await navigator.share({ text: t }); else { await navigator.clipboard.writeText(t); alert('Copié, tu peux le coller dans un message.'); } } catch {} },
   onglet: b => aller(b.dataset.v),
+  run: b => aller('run', { rid: b.dataset.id }),
+  runFait: () => { D.course.faits[etat.rid] = AUJ; sauver(); navigator.vibrate?.(20); history.back(); },
+  runAnnuler: () => { delete D.course.faits[etat.rid]; delete D.course.tests[etat.rid]; sauver(); rendre(); },
+  runChrono: () => { const inp = document.getElementById('chrono5'), m = inp.value.trim().match(/^(\d{1,2})\D*(\d{2})$/);
+    const s = m ? +m[1] * 60 + +m[2] : 0;
+    if (!m || +m[2] > 59 || s < 600 || s > 3600) { inp.value = ''; inp.placeholder = 'Format mm:ss, ex. 23:40'; return inp.focus(); }
+    D.course.tests[etat.rid] = { d: AUJ, s }; D.course.faits[etat.rid] = AUJ; sauver(); rendre(); },
   ouvrir: b => aller('seance', { s: b.dataset.s }),
   retour: () => history.back(),
   bilan: b => aller('bilan', { s: b.dataset.s, d: b.dataset.d }),
