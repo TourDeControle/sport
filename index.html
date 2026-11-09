@@ -221,15 +221,19 @@ const REPOS_SUPERSET = 90; // après chaque tour de superset (non précisé dans
 const DISQUES = [25, 20, 15, 10, 5, 2.5, 1.25], BARRE = 20;
 
 // ---------- données ----------
-const CLE = 'muscu';
-const D = JSON.parse(localStorage.getItem(CLE) || '{"log":{}}');
+// Profils : chaque personne a ses propres données sur ce téléphone (clé muscu:p:<prénom>).
+const PROF = JSON.parse(localStorage.getItem('muscu:profils') || '{"actif":"","liste":[]}');
+const sauverProfils = () => localStorage.setItem('muscu:profils', JSON.stringify(PROF));
+const cleDe = nom => 'muscu:p:' + nom;
+const CLE = cleDe(PROF.actif);
+const D = JSON.parse((PROF.actif && localStorage.getItem(CLE)) || '{"log":{}}');
 D.log ||= {}; D.notes ||= {}; D.seances ||= {}; D.poids ||= {};
-const sauver = () => localStorage.setItem(CLE, JSON.stringify(D));
+const sauver = () => PROF.actif && localStorage.setItem(CLE, JSON.stringify(D));
 const jour = d => d.toLocaleDateString('sv-SE');
 const AUJ = jour(new Date());
 const lundi = d => { const x = new Date(d); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return jour(x); };
 const plusJours = (d, n) => { const x = new Date(d + 'T12:00'); x.setDate(x.getDate() + n); return jour(x); };
-if (!D.debut) { D.debut = lundi(new Date()); sauver(); }
+if (!D.debut) { D.debut = lundi(new Date()); sauver(); }  // (sans effet tant qu'aucun profil)
 const dateFr = (d, o = { weekday:'long', day:'numeric', month:'long' }) => new Date(d + 'T12:00').toLocaleDateString('fr-FR', o);
 const dateCourte = d => new Date(d + 'T12:00').toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
 const kgFr = v => String(Math.round(v * 100) / 100).replace('.', ',');
@@ -358,7 +362,7 @@ function brancherGraphiques() {
 }
 
 // ---------- navigation ----------
-const etat = { v:'accueil', s:'A', pos:0, d:AUJ, id:'' };
+const etat = { v: PROF.actif ? 'accueil' : 'bienvenue', s:'A', pos:0, d:AUJ, id:'' };
 const RACINES = ['accueil', 'histo', 'progres', 'plan'];
 function aller(v, extra = {}, remplacer = false) {
   Object.assign(etat, { v }, extra);
@@ -370,14 +374,33 @@ history.replaceState({ ...etat }, '');
 
 const app = document.getElementById('app'), NAV = document.getElementById('nav');
 function rendre() {
-  ({ accueil:vAccueil, seance:vSeance, exo:vExo, bilan:vBilan, histo:vHisto, progres:vProgres, mouv:vMouv, plan:vPlan })[etat.v]();
-  NAV.hidden = !RACINES.includes(etat.v);
+  ({ bienvenue:vBienvenue, accueil:vAccueil, seance:vSeance, exo:vExo, bilan:vBilan, histo:vHisto, progres:vProgres, mouv:vMouv, plan:vPlan })[etat.v]();
+  NAV.hidden = !RACINES.includes(etat.v) || !PROF.actif;
   NAV.querySelectorAll('.onglet').forEach(b => b.dataset.v === etat.v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   brancherGraphiques();
   eveil(etat.v === 'exo');
 }
 
 // ---------- écrans ----------
+function creerProfil(nom) {
+  nom = nom.trim().slice(0, 20);
+  if (!nom) return "Écris un prénom.";
+  if (PROF.liste.some(x => x.toLowerCase() === nom.toLowerCase())) return "Ce prénom existe déjà sur ce téléphone.";
+  const ancien = localStorage.getItem('muscu'); // données d'avant les profils : elles vont au premier profil créé
+  if (!PROF.liste.length && ancien) { localStorage.setItem(cleDe(nom), ancien); localStorage.removeItem('muscu'); }
+  PROF.liste.push(nom); PROF.actif = nom; sauverProfils(); location.reload();
+}
+function vBienvenue() {
+  app.innerHTML = `<div class="page">
+    <p class="date">${dateFr(AUJ)}</p>
+    <h1>Bienvenue</h1>
+    <p class="sous">Ton prénom sert à séparer tes séances si vous êtes plusieurs sur ce téléphone.</p>
+    <div class="saisie"><input id="prenom" placeholder="Ton prénom" autocomplete="given-name" aria-label="Ton prénom">
+    <button data-a="creer">C'est parti</button></div>
+    <p class="regle" id="erreur"></p>
+  </div>`;
+}
+
 function vAccueil() {
   const s = prochaine(), { cycle, s: sem } = semaine(), n = nbFaits(s), tot = P[s].length;
   const finie = n === tot && commencee(s);
@@ -389,7 +412,8 @@ function vAccueil() {
   const nbSem = [...faits].filter(d => d >= lun && d <= plusJours(lun, 6)).length;
   const aSauver = seancesFaites().length >= 3 && (!D.export || plusJours(D.export, 14) < AUJ);
   app.innerHTML = `<div class="page">
-    <p class="date">${dateFr(AUJ)}</p>
+    <div class="haut"><span class="date" style="margin:0">${dateFr(AUJ)}</span>
+      <button class="mini" data-a="onglet" data-v="plan">${PROF.actif}${PROF.liste.length > 1 ? ' ▾' : ''}</button></div>
     <div class="hero">
       <p class="sur">${finie ? 'Terminée aujourd\'hui' : commencee(s) ? 'En cours' : 'Prochaine séance'}</p>
       <h1>Séance ${s}</h1>
@@ -549,7 +573,7 @@ function vProgres() {
     return `<button class="ligne" data-a="mouv" data-id="${e.id}"><span class="txt"><b>${e.n}</b><small>${sous}</small></span><span class="chev">›</span></button>`;
   }).join('');
   app.innerHTML = `<div class="page">
-    <h1>Progrès</h1>
+    <div class="haut"><h1 style="margin:0">Progrès</h1><button class="mini" data-a="partager">Partager</button></div>
     <div class="graph">
       <p class="titre">Poids du corps (kg)</p>
       <p class="lecture">${poids.length ? 'Dernier : ' + kgFr(poids.at(-1).y) + ' kg. Touche la courbe pour lire une date.' : 'Note ton poids de temps en temps, le matin à jeun.'}</p>
@@ -605,6 +629,12 @@ function vPlan() {
     <ol><li>Quand toutes les séries sont en haut de la fourchette : +2,5 kg sur le haut du corps, +5 kg sur les jambes. L'app le préremplit pour toi.</li>
     <li>Descends en 2-3 secondes et va bien en bas du mouvement.</li>
     <li>Mêmes exercices et mêmes machines pendant les 8 semaines.</li></ol>
+    <h2>Profils sur ce téléphone</h2>
+    <p>Chaque personne a ses propres séances, courbes et notes. Si chacun utilise son téléphone, un seul profil suffit.</p>
+    ${PROF.liste.map(n => `<button class="ligne" data-a="profil" data-n="${n}"><span class="rond ${n === PROF.actif ? 'ok' : ''}">${n === PROF.actif ? '✓' : n[0].toUpperCase()}</span>
+      <span class="txt"><b>${n}</b><small>${n === PROF.actif ? 'Profil utilisé' : 'Toucher pour passer sur ce profil'}</small></span></button>`).join('')}
+    <div class="saisie"><input id="nouveau" placeholder="Ajouter une personne" aria-label="Prénom de la nouvelle personne"><button data-a="ajouter">Ajouter</button></div>
+    <p class="regle" id="erreur"></p>
     <h2>Réglages</h2>
     <p>Début du cycle 1 (un lundi)<input type="date" id="debut" value="${D.debut}"></p>
     <p>Tes séries restent sur ce téléphone. Fais une sauvegarde de temps en temps${D.export ? ` (dernière le ${dateFr(D.export, { day:'numeric', month:'long' })})` : ''}.</p>
@@ -613,7 +643,7 @@ function vPlan() {
   </div>`;
   app.querySelector('#debut').onchange = ev => { D.debut = lundi(ev.target.value); sauver(); rendre(); };
   app.querySelector('#export').onclick = async () => {
-    const f = new File([JSON.stringify(D)], `muscu-${AUJ}.json`, { type:'application/json' });
+    const f = new File([JSON.stringify(D)], `muscu-${PROF.actif.toLowerCase()}-${AUJ}.json`, { type:'application/json' });
     try { if (navigator.canShare?.({ files:[f] })) await navigator.share({ files:[f], title:'Sauvegarde Muscu' });
       else { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); }
       D.export = AUJ; sauver(); rendre();
@@ -628,7 +658,19 @@ function vPlan() {
 
 // ---------- actions ----------
 const premiereAFaire = s => etapes(s).findIndex(st => !faite(s, st));
+function textePartage() {
+  const { cycle, s } = semaine(), l = seancesFaites();
+  const lignes = MOUVEMENTS.map(e => { const h = histoMouvement(e.id); if (!h.length) return '';
+    const maxs = h.map(x => Math.max(...x.sets.map(y => num(y[0])))), d = maxs.at(-1) - maxs[0];
+    return maxs.at(-1) ? `${e.n} : ${kgFr(maxs.at(-1))} kg${h.length > 1 && d ? ` (${d > 0 ? '+' : ''}${kgFr(d)} kg)` : ''}` : ''; }).filter(Boolean);
+  return [`Progrès de ${PROF.actif}, cycle ${cycle} semaine ${s} : ${l.length} séance${l.length > 1 ? 's' : ''}`, ...lignes].join(String.fromCharCode(10));
+}
 const ACTIONS = {
+  creer: () => { const err = creerProfil(document.getElementById('prenom').value); if (err) document.getElementById('erreur').textContent = err; },
+  ajouter: () => { const err = creerProfil(document.getElementById('nouveau').value); if (err) document.getElementById('erreur').textContent = err; },
+  profil: b => { if (b.dataset.n === PROF.actif) return; PROF.actif = b.dataset.n; sauverProfils(); location.reload(); },
+  partager: async () => { const t = textePartage();
+    try { if (navigator.share) await navigator.share({ text: t }); else { await navigator.clipboard.writeText(t); alert('Copié, tu peux le coller dans un message.'); } } catch {} },
   onglet: b => aller(b.dataset.v),
   ouvrir: b => aller('seance', { s: b.dataset.s }),
   retour: () => history.back(),
