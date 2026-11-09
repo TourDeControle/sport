@@ -3,8 +3,8 @@
   "short_name": "Muscu",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2b5d34",
+  "background_color": "#0e1110",
+  "theme_color": "#0e1110",
   "lang": "fr",
   "icons": [
     { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
