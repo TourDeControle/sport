@@ -273,7 +273,12 @@ document.getElementById('minuteur').addEventListener('click', ev => { const t = 
 document.querySelectorAll('.onglets button').forEach(b => b.onclick = () => { afficher(b.dataset.s); scrollTo(0, 0); });
 
 afficher({ 1: 'A', 3: 'B', 5: 'C' }[new Date().getDay()] || 'A');
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  // dès qu'une nouvelle version prend la main, la page se recharge toute seule
+  const avait = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (avait) location.reload(); });
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => r.update());
+}
 </script>
 </body>
 </html>
