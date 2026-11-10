@@ -295,6 +295,24 @@ const D = JSON.parse((PROF.actif && localStorage.getItem(CLE)) || '{"log":{}}');
 const CARNET = (window.CARNET || {})[PROF.actif] || {}; // séances d'avant l'app, en lecture seule
 D.log ||= {}; D.notes ||= {}; D.seances ||= {}; D.poids ||= {}; D.alt ||= {}; // alt : { 'date|séance': { id prévu: id de l'alternative } }
 const sauver = () => PROF.actif && localStorage.setItem(CLE, JSON.stringify(D));
+// séances perdues (icône réinstallée le 10/11), remises une seule fois, sans écraser une saisie existante
+const RATTRAPAGE = {
+  Hannibal: { '2026-11-09|A': { t0: Date.UTC(2026, 10, 9, 17, 0), min: 77, log: {
+    squat: [[60, 6], [60, 6], [60, 6]], couche: [[60, 10], [60, 10], [60, 10]], tractions: [[0, 6], [0, 6], [0, 6], [0, 6]],
+    legcurl: [[57, 10], [57, 10], [57, 10]], elev: [[8, 15], [8, 15], [8, 15]], curlinc: [[16, 10], [16, 10], [16, 10]],
+    tri: [[36, 12], [36, 12], [36, 12]] } } },
+};
+D.rattrape ||= {};
+for (const [k, r] of Object.entries(RATTRAPAGE[PROF.actif] || {})) {
+  if (D.rattrape[k]) continue;
+  const [d, s] = k.split('|');
+  for (const [id, sets] of Object.entries(r.log)) {
+    const h = (D.log[s + '.' + id] ||= {});
+    if (!h[d] || !h[d].length) h[d] = sets.map(([kg, rep]) => [String(kg), String(rep), 1]);
+  }
+  D.seances[k] ||= { t0: r.t0, t1: r.t0 + r.min * 60000 };
+  D.rattrape[k] = 1; sauver();
+}
 const jour = d => d.toLocaleDateString('sv-SE');
 const AUJ = jour(new Date());
 const lundi = d => { const x = new Date(d); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return jour(x); };
