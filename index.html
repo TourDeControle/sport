@@ -108,6 +108,8 @@
   .rang.grand { width:52px; height:52px; font-size:28px; border-radius:14px; margin-right:12px; }
   .rE { background:#8a948c; } .rD { background:#c99a6b; } .rC { background:#6fa8ff; } .rB { background:#5ccf78; } .rA { background:#c58bff; } .rS { background:#ffd34d; }
   .rangtete { display:flex; align-items:center; margin-bottom:6px; } .rangtete .lecture { margin:0; }
+  .familles { display:flex; flex-wrap:wrap; gap:6px 12px; padding:8px 4px; }
+  .mini-rang { display:inline-flex; align-items:center; font-size:13px; } .mini-rang .rang { width:22px; height:22px; font-size:12px; border-radius:6px; margin-right:5px; }
   .ligne.proch { box-shadow:inset 0 0 0 2px var(--vert); border-radius:14px; }
 
   .graph { background:var(--s1); border-radius:18px; padding:14px 10px 8px; margin-top:12px; }
@@ -377,34 +379,50 @@ const BAREME = {
   squat:[.75, 1, 1.25, 1.6, 2], couche:[.5, .75, 1, 1.25, 1.5], tractions:[1.07, 1.2, 1.35, 1.55, 1.8],
   legcurl:[.45, .65, .9, 1.15, 1.45], elev:[.06, .1, .14, .2, .27], curlinc:[.1, .16, .23, .32, .42], tri:[.25, .4, .55, .72, .95],
   presse:[1.5, 2, 2.75, 3.5, 4.5], inclhalt:[.15, .25, .37, .5, .65], row:[.45, .65, .9, 1.15, 1.45], sdtr:[.6, .9, 1.2, 1.5, 1.9],
-  dips:[1.15, 1.35, 1.55, 1.8, 2.1], rfly:[.05, .08, .12, .17, .23], mollets:[.6, 1, 1.5, 2, 2.6], bulgare:[.1, .18, .28, .4, .55],
+  dips:[1.15, 1.35, 1.55, 1.8, 2.1], rfly:[.05, .08, .12, .17, .23], mollets:[1.4, 1.7, 2.1, 2.6, 3.2], molletssmith:[1.4, 1.7, 2.1, 2.6, 3.2], bulgare:[.1, .18, .28, .4, .55],
   chest:[.5, .75, 1, 1.3, 1.65], tirage:[.5, .7, .95, 1.2, 1.5], legext:[.45, .7, .95, 1.25, 1.6], epaules:[.35, .55, .75, 1, 1.25],
   marteau:[.1, .16, .23, .31, .4],
-  pushdown:[.3, .45, .6, .8, 1.05], rowhalt:[.2, .32, .45, .6, .8], rowuni:[.25, .38, .5, .65, .85], rowbarre:[.5, .7, .95, 1.2, 1.5],
-  curlhalt:[.1, .16, .23, .31, .4], curlbarre:[.25, .4, .55, .75, .95], elevmachine:[.25, .4, .55, .75, 1], elevpoulie:[.04, .07, .1, .14, .19],
-  milhalt:[.12, .2, .3, .4, .52], milbarre:[.35, .5, .65, .85, 1.05], facepull:[.25, .4, .55, .75, 1], couchesmith:[.5, .75, 1, 1.25, 1.5],
-  couchehalt:[.15, .25, .37, .5, .65], inclbarre:[.45, .65, .85, 1.1, 1.35], squatsmith:[.7, .95, 1.2, 1.55, 1.95],
-  presseassise:[1, 1.4, 1.9, 2.5, 3.2], molletspresse:[.8, 1.3, 1.9, 2.6, 3.4], hack:[1, 1.4, 1.9, 2.5, 3.1], goblet:[.2, .3, .42, .55, .7],
+  pushdown:[.3, .45, .6, .8, 1.05], rowhalt:[.2, .32, .45, .6, .8], rowuni:[.28, .43, .58, .75, .98], rowbarre:[.38, .53, .7, .9, 1.12],
+  curlhalt:[.1, .16, .23, .31, .4], curlbarre:[.25, .4, .55, .75, .95], elevmachine:[.3, .5, .7, .95, 1.25], elevpoulie:[.035, .055, .08, .11, .15],
+  milhalt:[.12, .2, .3, .4, .52], milbarre:[.35, .5, .65, .85, 1.05], facepull:[.35, .55, .77, 1.05, 1.4], couchesmith:[.5, .75, 1, 1.25, 1.5],
+  couchehalt:[.15, .25, .37, .5, .65], inclbarre:[.45, .65, .85, 1.1, 1.35], squatsmith:[.5, .67, .85, 1.1, 1.4],
+  presseassise:[.8, 1.1, 1.5, 2, 2.55], molletspresse:[.8, 1.3, 1.9, 2.6, 3.4], hack:[1, 1.4, 1.9, 2.5, 3.1], goblet:[.2, .3, .42, .55, .7],
 };
 const POIDS_DEFAUT = 75;
 const poidsNote = () => { const d = Object.keys(D.poids).sort(); return d.length ? num(D.poids[d.at(-1)]) : 0; };
 const bw = () => poidsNote() || POIDS_DEFAUT;
 const repsCible = id => { for (const s of ORDRE) { const e = P[s].find(x => x.id === id); if (e) return e.lo; } return 10; };
+// mouvements où l'on soulève aussi son corps : le rang compte poids du corps + charge
+const PDC = new Set(['mollets', 'molletssmith']);
+const avecCorps = id => FICHE(id).lest || PDC.has(id);
 const force = (id, x) => { const r = Math.min(num(x[1]), 20); if (!r) return 0;
-  return (num(x[0]) + (FICHE(id).lest ? bw() : 0)) * (1 + r / 30); };
+  return (num(x[0]) + (avecCorps(id) ? bw() : 0)) * (1 + r / 30); };
+// séance notée sur une autre machine (ex. 50 kg en élévations « haltères ») : écartée du rang si plus de 2,5 fois la charge habituelle
+const maxKg = x => Math.max(0, ...x.sets.map(y => num(y[0])));
+function sansAberrant(h) {
+  if (h.length < 4) return h;
+  const m = h.map(maxKg).filter(v => v > 0).sort((a, b) => a - b); if (!m.length) return h;
+  const med = m[Math.floor(m.length / 2)];
+  return h.filter(x => maxKg(x) <= 2.5 * med);
+}
+// score continu de 0 à 5 : 3,4 = rang B, 40 % du chemin vers A
+function score(id, n) {
+  const b = BAREME[id], v = n / bw(), i = b.filter(t => v >= t - 1e-9).length;
+  return i === 0 ? v / b[0] : i === 5 ? 5 : i + (v - b[i - 1]) / (b[i] - b[i - 1]);
+}
 function rang(id, h) {
-  const b = BAREME[id]; if (!b || !h.length) return null;
+  const b = BAREME[id]; h = sansAberrant(h); if (!b || !h.length) return null;
   const niv = l => Math.max(0, ...l.flatMap(x => x.sets.map(y => force(id, y))));
   const n = niv(h.slice(-3)); if (!n) return null;
   const idx = v => b.filter(t => v / bw() >= t - 1e-9).length;
   const tout = h.map(x => ({ d: x.d, i: idx(niv([x])) })), top = tout.reduce((a, c) => c.i > a.i ? c : a);
-  return { i: idx(n), n, ratio: n / bw(), top };
+  return { i: idx(n), n, ratio: n / bw(), top, sc: score(id, n) };
 }
 // charge à atteindre pour le rang k (1 = D ... 5 = S), aux reps du bas de la fourchette
 function cibleRang(id, k) {
   const f = FICHE(id), r = repsCible(id), besoin = BAREME[id][k - 1] * bw();
-  let kg = besoin / (1 + r / 30) - (f.lest ? bw() : 0);
-  if (f.lest && kg <= 0) return `poids du corps × ${Math.max(1, Math.ceil(30 * (besoin / bw() - 1) - 1e-9))}`;
+  let kg = besoin / (1 + r / 30) - (avecCorps(id) ? bw() : 0);
+  if (avecCorps(id) && kg <= 0) return `poids du corps × ${Math.max(1, Math.ceil(30 * (besoin / bw() - 1) - 1e-9))}`;
   const pas = f.barre ? 2.5 : 1; kg = Math.ceil(kg / pas - 1e-9) * pas;
   return `${f.lest ? '+' : ''}${kgFr(kg)} kg × ${r}`;
 }
@@ -418,6 +436,53 @@ function blocRangs(id, h) {
   return `<div class="graph"><div class="rangtete">${badge(r, 1)}<p class="lecture">Rang ${RANGS[r.i]} sur tes 3 dernières séances
     (1RM estimé ≈ ${kgFr(Math.round(r.ratio * 100) / 100)} fois ton poids). Meilleur rang : ${RANGS[r.top.i]} (${dateFr(r.top.d, { day:'numeric', month:'short', year:'numeric' })})${sansPoids ? "." + sansPoids : "."}</p></div>
     <p class="titre">Objectifs par rang</p>${lignes}</div>`;
+}
+// ---------- rang global ----------
+// Une famille par exercice du programme ; ses variantes (machine prise, autre salle) comptent pour elle.
+// Note d'une famille = meilleur score de ses mouvements sur les 90 derniers jours. Rang global = moyenne des familles.
+// Aucun exercice n'est obligatoire : celui qui stagne garde sa note, les autres font monter la moyenne.
+const FAMILLE = { hack:'squat', goblet:'squat', squatsmith:'squat', presseassise:'presse', couchehalt:'couche', couchesmith:'couche',
+  couchesserre:'dips', dipsmachine:'dips', tirageserre:'tirage', pullover:'tirage', legcurlallonge:'legcurl', rdl:'sdtr', pullthrough:'sdtr',
+  elevpoulie:'elev', elevmachine:'elev', curlhalt:'curlinc', curlpoulie:'curlinc', curlbarre:'curlinc', trihalt:'tri', barrefront:'tri',
+  pushdown:'tri', inclbarre:'inclhalt', inclsmith:'inclhalt', rowhalt:'row', rowpoulie:'row', rowuni:'row', rowbarre:'row',
+  rflypoulie:'rfly', facepull:'rfly', oiseau:'rfly', molletspresse:'mollets', molletssmith:'mollets', fentes:'bulgare', stepup:'bulgare',
+  sissy:'legext', milhalt:'epaules', milbarre:'epaules', marteaupoulie:'marteau' };
+const FENETRE = 90, MIN_FAMILLES = 5;
+function rangGlobal() {
+  const depuis = plusJours(AUJ, -FENETRE), fam = {};
+  for (const e of MOUVEMENTS) {
+    const f = FAMILLE[e.id] || e.id, h = histoMouvement(e.id).filter(x => x.d >= depuis), r = BAREME[e.id] && rang(e.id, h);
+    if (r && (!fam[f] || r.sc > fam[f].sc)) fam[f] = { ...r, id: e.id, f };
+  }
+  const l = Object.values(fam); if (l.length < MIN_FAMILLES) return { l, manque: MIN_FAMILLES - l.length };
+  const moy = l.reduce((a, x) => a + x.sc, 0) / l.length, i = Math.min(5, Math.floor(moy + 1e-9));
+  if (i === 5) return { l, moy, i, pistes: [] };
+  // points qui manquent pour le rang suivant, et le chemin le plus court : les exercices les plus proches de leur rang suivant
+  let reste = (i + 1) * l.length - l.reduce((a, x) => a + x.sc, 0);
+  const options = l.filter(x => x.i < 5).map(x => { const k = x.i + 1, cible = BAREME[x.id][k - 1] * bw();
+    return { ...x, k, gain: k - x.sc, effort: cible / x.n - 1 }; }).sort((a, b) => a.effort - b.effort);
+  const pistes = []; for (const o of options) { if (reste <= 1e-9) break; pistes.push(o); reste -= o.gain; }
+  return { l, moy, i, pistes, manque: 0, points: (i + 1) * l.length - l.reduce((a, x) => a + x.sc, 0) };
+}
+function blocGlobal() {
+  const g = rangGlobal();
+  if (g.manque > 0) return `<div class="graph"><p class="titre">Rang global</p><p class="lecture">Encore ${g.manque} exercice${g.manque > 1 ? 's' : ''} différent${g.manque > 1 ? 's' : ''} à faire (sur les ${FENETRE} derniers jours) pour avoir un rang global.</p></div>`;
+  const R = RANGS[g.i], suiv = RANGS[g.i + 1], frac = g.moy - g.i;
+  const nom = id => FICHE(id).n;
+  const MAXP = 5, tout = g.pistes.length <= MAXP;
+  const pistes = g.pistes.slice(0, MAXP).map(o => `<div class="ligne"><span class="rang r${RANGS[o.k]}">${RANGS[o.k]}</span><span class="txt"><b>${nom(o.id)}</b>
+    <small>${cibleRang(o.id, o.k)} (+${Math.max(1, Math.round(o.effort * 100))} % de force)</small></span></div>`).join('');
+  const familles = [...g.l].sort((a, b) => b.sc - a.sc).map(x => `<span class="mini-rang"><span class="rang r${RANGS[x.i]}">${RANGS[x.i]}</span>${nom(x.id)}</span>`).join('');
+  const sansPoids = poidsNote() ? '' : ` Calculé pour ${POIDS_DEFAUT} kg de poids du corps.`;
+  return `<div class="graph"><div class="rangtete">${badge({ i: g.i }, 1)}<p class="lecture"><b>Rang global ${R}</b>, moyenne de ${g.l.length} exercices
+    sur les ${FENETRE} derniers jours.${sansPoids}</p></div>
+    ${suiv ? `<div class="prog"><i style="width:${Math.round(frac * 100)}%"></i></div>
+    <p class="titre">Pour passer ${suiv}</p>
+    <p class="lecture">Il te manque ${kgFr(Math.round(g.points * 10) / 10)} rang${g.points >= 2 ? 's' : ''} au total, à gagner sur les exercices de ton choix.
+    Aucun exercice n'est obligatoire : si l'un stagne, un autre qui gagne deux rangs compense.
+    ${tout ? `Le plus court : ${g.pistes.length > 1 ? 'ces ' + g.pistes.length + ' objectifs' : 'cet objectif'}.`
+      : 'Les plus proches :'}</p>${pistes}` : '<p class="lecture">Rang maximal atteint.</p>'}
+    <details><summary>Détail par exercice</summary><div class="familles">${familles}</div></details></div>`;
 }
 function ligneRang(id) {
   const r = rang(id, histoMouvement(id).filter(x => x.d < AUJ)); if (!r) return '';
@@ -713,7 +778,7 @@ function vExo() {
       <div class="stepper"><button data-a="pas" data-c="kg" data-d="-2.5" aria-label="Moins 2,5 kg">−</button>
       <input id="kg" inputmode="decimal" value="${v.kg === '' ? '' : kgFr(num(v.kg))}" placeholder="0" aria-label="Poids en kg">
       <button data-a="pas" data-c="kg" data-d="2.5" aria-label="Plus 2,5 kg">+</button></div>
-      ${e.barre ? `<p class="disques" id="disques">${texteDisques(num(v.kg))}</p>` : ''}</div>
+      ${e.barre ? `<p class="disques" id="disques">${texteDisques(num(v.kg))}</p>` : ''}<p class="aide" id="alerteKg"></p></div>
     <div class="reglage"><span class="lab">Répétitions</span>
       <div class="stepper"><button data-a="pas" data-c="r" data-d="-1" aria-label="Une rep de moins">−</button>
       <input id="r" inputmode="numeric" value="${v.r}" aria-label="Répétitions">
@@ -727,7 +792,11 @@ function vExo() {
   </div>
   <div class="bas"><button class="principal" data-a="valider">${dejaFaite ? 'Modifier' : 'Valider'} la série ${st.k + 1}</button></div>`;
   app.querySelector('#note').oninput = ev => { D.notes[e.id] = ev.target.value; sauver(); };
-  if (e.barre) app.querySelector('#kg').oninput = ev => app.querySelector('#disques').innerHTML = texteDisques(num(ev.target.value));
+  const hab = (() => { const m = histoMouvement(e.id).filter(x => x.d < AUJ).slice(-5).map(maxKg).filter(Boolean); return m.length ? Math.max(...m) : 0; })();
+  const alerte = kg => app.querySelector('#alerteKg').textContent = hab && kg > 2 * hab
+    ? `Beaucoup plus que d'habitude (${kgFr(hab)} kg). Si c'est une autre machine, choisis-la dans « Machine prise ? Alternatives » pour garder un suivi juste.` : '';
+  alerte(num(v.kg));
+  app.querySelector('#kg').oninput = ev => { if (e.barre) app.querySelector('#disques').innerHTML = texteDisques(num(ev.target.value)); alerte(num(ev.target.value)); };
 }
 
 function vBilan() {
@@ -780,6 +849,7 @@ function vProgres() {
   }).join('');
   app.innerHTML = `<div class="page">
     <div class="haut"><h1 style="margin:0">Progrès</h1><button class="mini" data-a="partager">Partager</button></div>
+    ${blocGlobal()}
     <div class="graph">
       <p class="titre">Poids du corps (kg)</p>
       <p class="lecture">${poids.length ? 'Dernier : ' + kgFr(poids.at(-1).y) + ' kg. Touche la courbe pour lire une date.' : 'Note ton poids de temps en temps, le matin à jeun.'}</p>
@@ -931,7 +1001,8 @@ function textePartage() {
   const lignes = MOUVEMENTS.map(e => { const h = histoMouvement(e.id); if (!h.length) return '';
     const maxs = h.map(x => Math.max(...x.sets.map(y => num(y[0])))), d = maxs.at(-1) - maxs[0];
     return maxs.at(-1) ? `${e.n} : ${kgFr(maxs.at(-1))} kg${h.length > 1 && d ? ` (${d > 0 ? '+' : ''}${kgFr(d)} kg)` : ''}${rang(e.id, h) ? ', rang ' + RANGS[rang(e.id, h).i] : ''}` : ''; }).filter(Boolean);
-  return [`Progrès de ${PROF.actif}, cycle ${cycle} semaine ${s} : ${l.length} séance${l.length > 1 ? 's' : ''}`, ...lignes].join(String.fromCharCode(10));
+  const g = rangGlobal();
+  return [`Progrès de ${PROF.actif}, cycle ${cycle} semaine ${s} : ${l.length} séance${l.length > 1 ? 's' : ''}${g.manque ? '' : ', rang global ' + RANGS[g.i]}`, ...lignes].join(String.fromCharCode(10));
 }
 const ACTIONS = {
   choisir: b => creerProfil(b.dataset.n),
