@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Muscu">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" href="icon-haltere-180.png">
 <title>Muscu</title>
 <style>
   :root { --bg:#0e1110; --s1:#171c19; --s2:#232a25; --ligne:#2e3730; --txt:#f2f5f2; --gris:#9aa59c; --clair:#d5ddd7;
@@ -93,6 +93,11 @@
   .note::placeholder { color:var(--gris); }
   .actions-exo { display:flex; justify-content:space-between; margin-top:4px; }
   .retirer { color:var(--gris); font-size:15px; padding:10px 0; }
+  details.alts { margin:0 0 14px; }
+  details.alts summary { color:var(--vert); }
+  .choix { padding:0 8px 8px; }
+  .choix .ligne { background:var(--s2); }
+  .choix .aide { color:var(--gris); font-size:13px; margin:4px 6px 4px; line-height:1.4; }
 
   .tuiles { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0 6px; }
   .tuile { background:var(--s1); border-radius:16px; padding:12px; }
@@ -222,6 +227,57 @@ const TECH = {
   epaules:['Dos collé au dossier.','Pousse sans cambrer.','Redescends jusqu\'à hauteur du menton.'],
   marteau:['Prise neutre, pouces vers le haut.','Coudes collés au corps.','Pas de balancier.'],
 };
+// Alternatives quand la machine est prise : même muscle, même fourchette de reps et même repos que l'exercice prévu.
+// Chaque alternative a son propre historique (sauf si c'est un exercice du programme, comme la presse ou le tirage).
+const AUTRES = {
+  hack:{ n:'Hack squat machine', t:['Pieds au milieu de la plateforme, largeur d\'épaules.','Dos collé au dossier.','Descends au moins cuisses parallèles.'] },
+  goblet:{ n:'Goblet squat haltère', t:['Haltère tenu contre la poitrine, coudes vers le bas.','Buste droit, genoux dans l\'axe des pieds.','Descends le plus bas possible sans arrondir le dos.'] },
+  couchehalt:{ n:'Développé couché haltères', t:['Omoplates serrées, pieds ancrés au sol.','Descends les haltères sur les côtés des pecs.','Pousse vers le haut sans cogner les haltères.'] },
+  couchesmith:{ n:'Développé couché Smith', t:['Banc placé pour que la barre arrive au bas des pecs.','Omoplates serrées, coudes pas trop écartés.','Note le poids de la barre Smith, il change d\'une salle à l\'autre.'] },
+  tirageserre:{ n:'Tirage vertical prise serrée', t:['Poignée triangle ou prise serrée.','Tire vers le haut de la poitrine, coudes vers les hanches.','Remonte bras tendus pour bien étirer.'] },
+  legcurlallonge:{ n:'Leg curl allongé', t:['Genou juste au bord du banc.','Bassin plaqué, ne décolle pas les hanches.','Plie à fond, redescends lentement.'] },
+  rdl:{ n:'Soulevé de terre roumain haltères', t:['Genoux légèrement fléchis et fixes.','Pousse les fesses en arrière, haltères le long des cuisses.','Descends jusqu\'à l\'étirement des ischios, dos neutre.'] },
+  elevpoulie:{ n:'Élévations latérales poulie', t:['Poulie basse, câble passé devant le corps.','Monte jusqu\'à hauteur d\'épaules en menant avec le coude.','Descente lente, tension constante.'] },
+  elevmachine:{ n:'Élévations latérales machine', t:['Épaules alignées avec l\'axe de la machine.','Monte jusqu\'à hauteur d\'épaules.','Pas d\'élan, descente lente.'] },
+  curlhalt:{ n:'Curl haltères debout', t:['Coudes collés au corps.','Tourne le poignet en montant (pouce vers l\'extérieur).','Descends jusqu\'au bras tendu.'] },
+  curlpoulie:{ n:'Curl poulie basse', t:['Face à la poulie, coudes fixes.','Monte sans avancer les coudes.','Descente contrôlée jusqu\'au bras tendu.'] },
+  trihalt:{ n:'Extension triceps haltère au-dessus de la tête', t:['Haltère tenu à deux mains derrière la tête.','Coudes serrés et pointés vers le haut.','Descends bien derrière la tête, tends complètement.'] },
+  barrefront:{ n:'Barre au front EZ', t:['Allongé, bras verticaux.','Descends la barre vers le front en gardant les coudes fixes.','Tends complètement.'] },
+  pushdown:{ n:'Extension triceps poulie haute', t:['Corde ou barre, coudes collés au corps.','Tends complètement en bas.','Remonte lentement jusqu\'à 90°.'] },
+  inclbarre:{ n:'Développé incliné barre', barre:1, t:['Banc à environ 30°.','Barre vers le haut des pecs, omoplates serrées.','Coudes pas trop écartés.'] },
+  inclsmith:{ n:'Développé incliné Smith', t:['Banc à environ 30°, barre au-dessus du haut des pecs.','Omoplates serrées.','Note le poids de la barre Smith.'] },
+  rowhalt:{ n:'Rowing haltère un bras', note:'par bras', t:['Main et genou posés sur le banc, dos plat.','Tire le coude vers la hanche.','Laisse l\'épaule descendre à l\'étirement.'] },
+  rowpoulie:{ n:'Tirage horizontal poulie', t:['Buste droit, léger appui des pieds.','Tire vers le nombril, serre les omoplates.','Ne te balance pas d\'avant en arrière.'] },
+  hipmachine:{ n:'Hip thrust machine', t:['Dos calé contre le dossier, coussin sur les hanches.','Pieds à plat, tibias verticaux en haut.','Serre les fessiers 1 s en haut, sans cambrer.'] },
+  hipsmith:{ n:'Hip thrust Smith', t:['Barre Smith sur le pli des hanches avec une mousse.','Bas des omoplates sur le banc.','Serre les fessiers en haut, menton rentré.'] },
+  dipsmachine:{ n:'Dips machine', t:['Buste droit, coudes vers l\'arrière.','Descends jusqu\'à 90° aux coudes.','Pousse jusqu\'aux bras tendus.'] },
+  couchesserre:{ n:'Développé couché prise serrée', barre:1, t:['Mains largeur d\'épaules.','Coudes près du corps.','Barre vers le bas des pecs.'] },
+  rflypoulie:{ n:'Reverse fly poulie', t:['Câbles croisés, poulies à hauteur d\'épaules.','Ouvre les bras vers l\'arrière, presque tendus.','Épaules basses.'] },
+  facepull:{ n:'Face pull', t:['Corde à hauteur du visage.','Tire vers le front en écartant les mains.','Coudes hauts, épaules basses.'] },
+  oiseau:{ n:'Oiseau haltères', t:['Buste penché presque à l\'horizontale, dos plat.','Ouvre les bras sur les côtés, coudes un peu fléchis.','Pas d\'élan.'] },
+  molletspresse:{ n:'Mollets à la presse', t:['Pointes des pieds en bas de la plateforme.','Genoux tendus, pas verrouillés.','Étire en bas 1 s, pousse au maximum.'] },
+  molletssmith:{ n:'Mollets debout Smith', t:['Pointes sur un step, barre sur les trapèzes.','Descends les talons au plus bas, tiens 1 s.','Monte sur la pointe au maximum.'] },
+  fentes:{ n:'Fentes marchées haltères', note:'par jambe', t:['Grand pas en avant.','Genou arrière qui frôle le sol.','Pousse sur le talon avant pour avancer.'] },
+  stepup:{ n:'Step-up sur banc haltères', note:'par jambe', t:['Pied entier sur le banc.','Monte en poussant sur la jambe du haut, sans t\'aider de l\'autre.','Redescends lentement.'] },
+  pullover:{ n:'Pull-over poulie haute', t:['Bras presque tendus, léger penché en avant.','Ramène la barre vers les cuisses en serrant les dorsaux.','Remonte lentement jusqu\'à l\'étirement.'] },
+  sissy:{ n:'Sissy squat', t:['Tiens-toi à un support.','Genoux vers l\'avant, buste et cuisses alignés.','Descends tant que c\'est sans douleur.'] },
+  milhalt:{ n:'Développé épaules haltères assis', t:['Dossier presque vertical.','Haltères à hauteur d\'oreilles au départ.','Pousse sans cambrer.'] },
+  milbarre:{ n:'Développé militaire barre', barre:1, t:['Debout, fessiers et abdos serrés.','Barre devant le visage, puis au-dessus de la tête.','Pas de cambrure.'] },
+  marteaupoulie:{ n:'Curl marteau poulie corde', t:['Corde sur poulie basse, prise neutre.','Coudes collés au corps.','Pas de balancier.'] },
+};
+const ALT = {
+  squat:['hack', 'presse', 'goblet'], couche:['couchehalt', 'couchesmith', 'chest'], tractions:['tirage', 'tirageserre'],
+  legcurl:['legcurlallonge', 'rdl'], elev:['elevpoulie', 'elevmachine'], curlinc:['curlhalt', 'curlpoulie'],
+  tri:['trihalt', 'barrefront', 'pushdown'], presse:['hack', 'squat', 'goblet'], inclhalt:['inclbarre', 'inclsmith', 'couchehalt'],
+  row:['rowhalt', 'rowpoulie'], hip:['hipmachine', 'hipsmith'], dips:['dipsmachine', 'couchesserre'],
+  rfly:['rflypoulie', 'facepull', 'oiseau'], mollets:['molletspresse', 'molletssmith'], bulgare:['fentes', 'stepup', 'presse'],
+  chest:['couchehalt', 'couche', 'inclhalt'], tirage:['tractions', 'tirageserre', 'pullover'], legext:['sissy', 'goblet'],
+  epaules:['milhalt', 'milbarre'], marteau:['marteaupoulie', 'curlhalt'],
+};
+for (const [id, x] of Object.entries(AUTRES)) TECH[id] = x.t;
+// fiche d'un mouvement par id : ce qui définit le geste (nom, barre, lest, note)
+const FICHE = id => { for (const s in P) { const e = P[s].find(x => x.id === id); if (e) return { id, n:e.n, barre:e.barre, lest:e.lest, note:e.note }; }
+  const a = AUTRES[id]; return a && { id, n:a.n, barre:a.barre, note:a.note }; };
 const ORDRE = ['A', 'B', 'C'];
 const REPOS_SUPERSET = 90; // après chaque tour de superset (non précisé dans le programme, réglable avec ±15 s)
 const DISQUES = [25, 20, 15, 10, 5, 2.5, 1.25], BARRE = 20;
@@ -237,7 +293,7 @@ const ORPHELIN = PROF.actif && !PRENOMS.includes(PROF.actif) ? PROF.actif : '';
 const CLE = cleDe(PROF.actif);
 const D = JSON.parse((PROF.actif && localStorage.getItem(CLE)) || '{"log":{}}');
 const CARNET = (window.CARNET || {})[PROF.actif] || {}; // séances d'avant l'app, en lecture seule
-D.log ||= {}; D.notes ||= {}; D.seances ||= {}; D.poids ||= {};
+D.log ||= {}; D.notes ||= {}; D.seances ||= {}; D.poids ||= {}; D.alt ||= {}; // alt : { 'date|séance': { id prévu: id de l'alternative } }
 const sauver = () => PROF.actif && localStorage.setItem(CLE, JSON.stringify(D));
 const jour = d => d.toLocaleDateString('sv-SE');
 const AUJ = jour(new Date());
@@ -261,6 +317,12 @@ const REGLE = s => s <= 2 ? "Arrête-toi à 2 reps de l'échec."
   : "Semaine allégée : moitié moins de séries, mêmes charges.";
 const REPOS_TXT = { 60:'1 min', 90:'1 min 30', 120:'2 min', 180:'3 min' };
 
+// exercice réellement fait ce jour-là (l'alternative si la machine était prise), avec les séries/reps/repos du prévu
+function exDu(s, i, d = AUJ) {
+  const e = P[s][i], a = (D.alt[d + '|' + s] || {})[e.id], f = a && FICHE(a);
+  return f ? { ...e, ...f, orig: e } : e;
+}
+const L = (s, d = AUJ) => P[s].map((e, i) => exDu(s, i, d));
 const cle = (s, e) => s + '.' + e.id;
 const nbSeries = e => semaine().s === 8 ? Math.ceil(e.s / 2) : e.s;
 const faitSet = (x, d) => x && (x[2] || (d < AUJ && x[1])); // les anciennes saisies sans ✓ comptent
@@ -268,6 +330,7 @@ const setsDu = (s, e, d) => ((D.log[cle(s, e)] || {})[d] || []);
 const duJour = (s, e) => setsDu(s, e, AUJ);
 const faitsDu = (s, e, d) => setsDu(s, e, d).filter(x => faitSet(x, d));
 function derniere(s, e) {
+  if (e.orig) { const m = histoMouvement(e.id).filter(x => x.d < AUJ); return m.length ? m.at(-1).sets : null; } // alternative : toutes séances confondues
   const h = D.log[cle(s, e)] || {};
   const ds = Object.keys(h).filter(d => d < AUJ && h[d].some(x => faitSet(x, d))).sort();
   if (ds.length) return h[ds.at(-1)].filter(x => faitSet(x, '0'));
@@ -293,11 +356,11 @@ function etapes(s) {
   }
   return out;
 }
-const faite = (s, st) => !!(duJour(s, P[s][st.i])[st.k] || [])[2];
+const faite = (s, st) => !!(duJour(s, L(s)[st.i])[st.k] || [])[2];
 const exFini = (s, i) => etapes(s).filter(st => st.i === i).every(st => faite(s, st));
 const nbFaits = s => P[s].filter((e, i) => exFini(s, i)).length;
 const commencee = s => etapes(s).some(st => faite(s, st));
-const partenaire = (s, i) => { const l = P[s], e = l[i]; return !e.ss ? null : (l[i - 1] && l[i - 1].ss === e.ss ? l[i - 1] : l[i + 1]); };
+const partenaire = (s, i) => { const l = L(s), e = l[i]; return !e.ss ? null : (l[i - 1] && l[i - 1].ss === e.ss ? l[i - 1] : l[i + 1]); };
 
 // toutes les séances faites : [{ s, d }], de la plus récente à la plus ancienne
 function seancesFaites() {
@@ -317,7 +380,7 @@ function prochaine() {
 }
 function statsSeance(s, d) {
   let series = 0, volume = 0, ex = 0;
-  for (const e of P[s]) { const f = faitsDu(s, e, d); if (f.length) ex++; series += f.length; volume += f.reduce((t, x) => t + num(x[0]) * num(x[1]), 0); }
+  for (const e of L(s, d)) { const f = faitsDu(s, e, d); if (f.length) ex++; series += f.length; volume += f.reduce((t, x) => t + num(x[0]) * num(x[1]), 0); }
   const m = D.seances[d + '|' + s];
   return { series, volume, ex, duree: m && m.t1 > m.t0 ? duree(m.t1 - m.t0) : null };
 }
@@ -332,7 +395,8 @@ function histoMouvement(id) {
   for (const [d, sets] of Object.entries(CARNET[id] || {})) if (!par[d]) { par[d] = sets.slice(); carnet.add(d); }
   return Object.keys(par).sort().map(d => ({ d, sets: par[d] }));
 }
-const MOUVEMENTS = (() => { const vu = new Map(); for (const s of ORDRE) for (const e of P[s]) if (!vu.has(e.id)) vu.set(e.id, e); return [...vu.values()]; })();
+const MOUVEMENTS = (() => { const vu = new Map(); for (const s of ORDRE) for (const e of P[s]) if (!vu.has(e.id)) vu.set(e.id, e);
+  for (const id in AUTRES) vu.set(id, FICHE(id)); return [...vu.values()]; })(); // les alternatives n'apparaissent dans Progrès qu'une fois faites
 function disques(total) {
   let r = (total - BARRE) / 2; if (r < 0) return null;
   const out = []; for (const p of DISQUES) while (r >= p - 1e-9) { out.push(p); r -= p; }
@@ -466,7 +530,7 @@ function vAccueil() {
       <p class="sur">${finie ? 'Terminée aujourd\'hui' : commencee(s) ? 'En cours' : 'Prochaine séance'}</p>
       <h1>Séance ${s}</h1>
       <p class="sous">${tot} exercices, 1 h à 1 h 15</p>
-      <ul class="apercu">${P[s].map(e => `<li>${e.n}</li>`).join('')}</ul>
+      <ul class="apercu">${L(s).map(e => `<li>${e.n}</li>`).join('')}</ul>
       ${bouton}
     </div>
     ${(x => x ? `<h2>Course à pied</h2><button class="ligne" data-a="run" data-id="${x.id}"><span class="rond">${x.test ? '5k' : x.sem}</span>
@@ -490,11 +554,11 @@ function vAccueil() {
 }
 
 function vSeance() {
-  const s = etat.s, l = P[s], n = nbFaits(s);
+  const s = etat.s, l = L(s), n = nbFaits(s);
   let liste = '';
   const ligne = i => { const e = l[i], prec = derniere(s, e), ok = exFini(s, i);
     const fait = duJour(s, e).filter(x => x && x[2]).length;
-    const sous = `${nbSeries(e)} × ${e.lo}-${e.hi}` + (fait && !ok ? `, ${fait} faite${fait > 1 ? 's' : ''}` : prec ? `, dernière fois ${resume(prec.slice(0, 1))}` : '');
+    const sous = (e.orig ? `À la place de ${e.orig.n.toLowerCase()}, ` : '') + `${nbSeries(e)} × ${e.lo}-${e.hi}` + (fait && !ok ? `, ${fait} faite${fait > 1 ? 's' : ''}` : prec ? `, dernière fois ${resume(prec.slice(0, 1))}` : '');
     return `<button class="ligne" data-a="exo" data-i="${i}"><span class="rond ${ok ? 'ok' : ''}">${ok ? '✓' : i + 1}</span>
       <span class="txt"><b>${e.n}</b><small>${sous}</small></span><span class="chev">›</span></button>`; };
   for (let i = 0; i < l.length; i++) {
@@ -514,7 +578,7 @@ function vSeance() {
 }
 
 function valeursDepart(s, st) {
-  const e = P[s][st.i], auj = duJour(s, e), prec = derniere(s, e);
+  const e = L(s)[st.i], auj = duJour(s, e), prec = derniere(s, e);
   if (auj[st.k] && auj[st.k][1]) return { kg: auj[st.k][0], r: auj[st.k][1] };
   const avant = auj[st.k - 1];
   if (avant && avant[1]) return { kg: avant[0], r: avant[1] };
@@ -529,7 +593,7 @@ function texteDisques(kg) {
 }
 
 function vExo() {
-  const s = etat.s, E = etapes(s), st = E[etat.pos], e = P[s][st.i], nb = nbSeries(e);
+  const s = etat.s, E = etapes(s), st = E[etat.pos], e = L(s)[st.i], nb = nbSeries(e);
   const auj = duJour(s, e), prec = derniere(s, e), sem = semaine().s, v = valeursDepart(s, st), pa = partenaire(s, st.i);
   const etapesEx = E.map((x, j) => ({ ...x, j })).filter(x => x.i === st.i);
   const puces = etapesEx.map(x => { const z = auj[x.k];
@@ -545,12 +609,21 @@ function vExo() {
   const tag = pa ? `<span class="tag">Superset avec ${pa.n.toLowerCase()}${st.repos ? '' : ', enchaîne sans repos'}</span>` : '';
   const reposTxt = e.repos ? `, repos ${REPOS_TXT[e.repos]}` : '';
   const dejaFaite = auj[st.k] && auj[st.k][2];
+  // machine prise : exercices équivalents (et retour à l'exercice prévu si on est déjà sur une alternative)
+  const prevu = e.orig || e, pris = new Set(L(s).map(x => x.id)); // pas deux fois le même exercice dans la séance
+  const choix = [...(e.orig ? [prevu.id] : []), ...(ALT[prevu.id] || []).filter(id => !pris.has(id))].map(id => {
+    const f = FICHE(id), h = histoMouvement(id).filter(x => x.d < AUJ);
+    return `<button class="ligne" data-a="alt" data-id="${id}"><span class="txt"><b>${id === prevu.id ? 'Revenir à ' + f.n.toLowerCase() : f.n}</b>
+      <small>${id === prevu.id ? 'L\'exercice prévu' : h.length ? 'Dernière fois ' + resume(h.at(-1).sets.slice(0, 1)) : 'Pas encore fait'}</small></span><span class="chev">›</span></button>`; }).join('');
+  const blocAlt = choix ? `<details class="alts"><summary>${e.orig ? 'À la place de ' + prevu.n.toLowerCase() + ', changer' : 'Machine prise ? Alternatives'}</summary>
+    <div class="choix">${choix}<p class="aide">Même nombre de séries, mêmes reps, même repos. Le suivi se fait sur l'exercice choisi, pour aujourd'hui seulement.</p></div></details>` : '';
   app.innerHTML = `<div class="page">
     <div class="haut"><button class="retour" data-a="retour">‹ Séance ${s}</button><span class="compteur">Exercice ${st.i + 1} sur ${P[s].length}${m ? ', ' + duree(Date.now() - m.t0) : ''}</span></div>
     ${tag}
     <h1>${e.n}</h1>
     <p class="cible">Série ${st.k + 1} sur ${nb}, objectif ${e.lo}-${e.hi} reps${e.note ? ' ' + e.note : ''}${reposTxt}</p>
     <p class="regle">${REGLE(sem)}</p>
+    ${blocAlt}
     <div class="puces">${puces}</div>
     ${infos}
     <div class="reglage"><span class="lab">${e.lest ? 'Lest (kg)' : 'Poids (kg)'}</span>
@@ -576,7 +649,7 @@ function vExo() {
 
 function vBilan() {
   const { s, d } = etat, st = statsSeance(s, d);
-  const lignes = P[s].map(e => {
+  const lignes = L(s, d).map(e => {
     const sets = faitsDu(s, e, d);
     if (!sets.length) return '';
     const avant = histoMouvement(e.id).filter(x => x.d < d).flatMap(x => x.sets.map(y => num(y[0])));
@@ -799,16 +872,22 @@ const ACTIONS = {
     let j = E.findIndex(st => st.i === i && !faite(etat.s, st)); if (j < 0) j = E.findIndex(st => st.i === i);
     aller('exo', { pos: j }); },
   aller: b => aller('exo', { pos: +b.dataset.j }, true),
+  alt: b => { const s = etat.s, E = etapes(s), i = E[etat.pos].i, prevu = P[s][i], id = b.dataset.id, k = AUJ + '|' + s;
+    const m = (D.alt[k] ||= {}); if (id === prevu.id) delete m[prevu.id]; else m[prevu.id] = id;
+    if (!Object.keys(m).length) delete D.alt[k];
+    sauver(); navigator.vibrate?.(15);
+    let j = E.findIndex(st => st.i === i && !faite(s, st)); if (j < 0) j = E.findIndex(st => st.i === i);
+    aller('exo', { pos: j }, true); },
   pas: b => { const inp = document.getElementById(b.dataset.c), d = +b.dataset.d;
     const x = Math.max(0, Math.round((num(inp.value) + d) * 10) / 10); inp.value = b.dataset.c === 'kg' ? kgFr(x) : x;
     inp.dispatchEvent(new Event('input')); navigator.vibrate?.(8); },
   poids: () => { const v = num(document.getElementById('pc').value); if (!v) return document.getElementById('pc').focus();
     D.poids[AUJ] = v; sauver(); rendre(); },
-  retirer: () => { const s = etat.s, st = etapes(s)[etat.pos], j = duJour(s, P[s][st.i]);
+  retirer: () => { const s = etat.s, st = etapes(s)[etat.pos], j = duJour(s, L(s)[st.i]);
     if (j[st.k]) j[st.k][2] = 0; sauver(); rendre(); },
   valider: () => {
     son(true);
-    const s = etat.s, E = etapes(s), st = E[etat.pos], e = P[s][st.i];
+    const s = etat.s, E = etapes(s), st = E[etat.pos], e = L(s)[st.i];
     const kg = num(document.getElementById('kg').value), r = Math.round(num(document.getElementById('r').value));
     if (!r) return document.getElementById('r').focus();
     const deja = faite(s, st);
@@ -821,7 +900,7 @@ const ACTIONS = {
     for (let d = 1; d <= E.length; d++) { const c = (etat.pos + d) % E.length; if (!faite(s, E[c])) { n = c; break; } }
     if (n < 0) return aller('bilan', { d: AUJ }, true);
     aller('exo', { pos: n }, true);
-    if (st.repos && !deja) { const nx = E[n], ne = P[s][nx.i]; ouvrirRepos(st.repos, `${ne.n}, série ${nx.k + 1}`); }
+    if (st.repos && !deja) { const nx = E[n], ne = L(s)[nx.i]; ouvrirRepos(st.repos, `${ne.n}, série ${nx.k + 1}`); }
   },
 };
 document.addEventListener('click', ev => { const b = ev.target.closest('[data-a]'); if (b && ACTIONS[b.dataset.a]) ACTIONS[b.dataset.a](b); });
