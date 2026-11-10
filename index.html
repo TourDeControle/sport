@@ -433,8 +433,8 @@ function blocRangs(id, h) {
     return `<div class="ligne${proch ? ' proch' : ''}"><span class="rang r${R}">${R}</span><span class="txt"><b>${cibleRang(id, k)}</b>
       <small>${ok ? 'atteint' : proch ? 'prochain rang' : 'à venir'}</small></span>${ok ? '<span class="rec">✓</span>' : ''}</div>`; }).join('');
   const sansPoids = poidsNote() ? '' : ` Calculé pour ${POIDS_DEFAUT} kg de poids du corps : note ton poids dans Progrès pour un rang juste.`;
-  return `<div class="graph"><div class="rangtete">${badge(r, 1)}<p class="lecture">Rang ${RANGS[r.i]} sur tes 3 dernières séances
-    (1RM estimé ≈ ${kgFr(Math.round(r.ratio * 100) / 100)} fois ton poids). Meilleur rang : ${RANGS[r.top.i]} (${dateFr(r.top.d, { day:'numeric', month:'short', year:'numeric' })})${sansPoids ? "." + sansPoids : "."}</p></div>
+  return `<div class="graph"><div class="rangtete">${badge(r, 1)}<p class="lecture">Rang ${RANGS[r.i]} sur ${h.length >= 3 ? 'tes 3 dernières séances' : h.length === 2 ? 'tes 2 dernières séances' : 'ta dernière séance'}
+    (1RM estimé ≈ ${kgFr(Math.round(r.ratio * 100) / 100)} fois ton poids).${h.length > 1 ? ` Meilleur rang : ${RANGS[r.top.i]} (${dateFr(r.top.d, { day:'numeric', month:'short', year:'numeric' })}).` : ''}${sansPoids}</p></div>
     <p class="titre">Objectifs par rang</p>${lignes}</div>`;
 }
 // ---------- rang global ----------
