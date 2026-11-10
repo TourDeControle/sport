@@ -104,6 +104,11 @@
   .tuile b { display:block; font-size:22px; font-variant-numeric:tabular-nums; }
   .tuile span { color:var(--gris); font-size:13px; }
   .rec { color:var(--vert); font-weight:600; }
+  .rang { display:inline-grid; place-items:center; flex:none; width:30px; height:30px; border-radius:9px; font-weight:800; font-size:15px; margin-right:8px; vertical-align:middle; color:#0e1110; }
+  .rang.grand { width:52px; height:52px; font-size:28px; border-radius:14px; margin-right:12px; }
+  .rE { background:#8a948c; } .rD { background:#c99a6b; } .rC { background:#6fa8ff; } .rB { background:#5ccf78; } .rA { background:#c58bff; } .rS { background:#ffd34d; }
+  .rangtete { display:flex; align-items:center; margin-bottom:6px; } .rangtete .lecture { margin:0; }
+  .ligne.proch { box-shadow:inset 0 0 0 2px var(--vert); border-radius:14px; }
 
   .graph { background:var(--s1); border-radius:18px; padding:14px 10px 8px; margin-top:12px; }
   .graph .titre { margin:0 6px 2px; font-weight:600; font-size:15px; }
@@ -188,7 +193,7 @@ const P = {
   B: [
     { id:'presse', n:'Presse à cuisses', s:3, lo:10, hi:12, repos:120, leg:1 },
     { id:'inclhalt', n:'Développé incliné haltères', s:3, lo:8, hi:12, repos:120 },
-    { id:'row', n:'Row machine poitrine appuyée', s:4, lo:8, hi:12, repos:120 },
+    { id:'row', n:'Row assis machine', s:4, lo:8, hi:12, repos:120 },
     { id:'sdtr', n:'Soulevé de terre roumain barre', s:3, lo:8, hi:12, repos:120, leg:1, barre:1 },
     { id:'dips', n:'Dips lestés', s:3, lo:6, hi:10, repos:120, lest:1 },
     { id:'rfly', n:'Reverse fly', s:3, lo:15, hi:20, ss:1 },
@@ -215,7 +220,7 @@ const TECH = {
   tri:['Dos à la poulie, corde au-dessus de la tête.','Coudes serrés et fixes.','Descends bien derrière la tête, tends complètement.'],
   presse:['Pieds largeur d\'épaules, au milieu de la plateforme.','Descends sans décoller le bas du dos.','Ne verrouille pas les genoux en haut.'],
   inclhalt:['Banc à environ 30°.','Omoplates serrées, haltères descendus bas sur les côtés.','Pousse vers le haut sans cogner les haltères.'],
-  row:['Poitrine collée au support.','Tire les coudes vers l\'arrière, serre les omoplates.','Laisse les épaules s\'avancer à l\'étirement.'],
+  row:['Buste droit, pieds calés, sans te pencher en arrière.','Tire les coudes vers l\'arrière, serre les omoplates.','Laisse les épaules s\'avancer à l\'étirement, dos neutre.'],
   sdtr:['Pieds largeur de hanches, barre contre les cuisses, genoux légèrement fléchis et fixes.','Pousse les fesses en arrière, la barre glisse le long des jambes, dos neutre.','Descends jusqu\'à l\'étirement des ischios (sous les genoux), remonte en serrant les fessiers.'],
   dips:['Buste légèrement penché en avant.','Descends jusqu\'à épaules un peu sous les coudes, sans douleur.','Pousse jusqu\'aux bras tendus.'],
   rfly:['Bras presque tendus.','Ouvre vers l\'arrière en menant avec les coudes.','Épaules basses, pas de haussement.'],
@@ -262,13 +267,18 @@ const AUTRES = {
   sissy:{ n:'Sissy squat', t:['Tiens-toi à un support.','Genoux vers l\'avant, buste et cuisses alignés.','Descends tant que c\'est sans douleur.'] },
   milhalt:{ n:'Développé épaules haltères assis', t:['Dossier presque vertical.','Haltères à hauteur d\'oreilles au départ.','Pousse sans cambrer.'] },
   milbarre:{ n:'Développé militaire barre', barre:1, t:['Debout, fessiers et abdos serrés.','Barre devant le visage, puis au-dessus de la tête.','Pas de cambrure.'] },
+  rowuni:{ n:'Row assis machine unilatéral', note:'par bras', t:['Buste droit, poitrine face au support.','Tire le coude vers l\'arrière, un bras après l\'autre.','Laisse l\'épaule s\'avancer à l\'étirement.'] },
+  rowbarre:{ n:'Rowing barre', barre:1, t:['Buste penché à 45°, dos plat.','Tire la barre vers le nombril.','Pas d\'élan avec le buste.'] },
+  squatsmith:{ n:'Squat Smith', t:['Pieds un peu devant la barre.','Descends au moins cuisses parallèles.','Note le poids de la barre Smith.'] },
+  presseassise:{ n:'Presse à cuisses assise', t:['Dos collé au dossier.','Descends sans décoller le bas du dos.','Ne verrouille pas les genoux.'] },
+  curlbarre:{ n:'Curl barre', t:['Coudes collés au corps.','Monte sans balancer le buste.','Descends jusqu\'au bras tendu.'] },
   marteaupoulie:{ n:'Curl marteau poulie corde', t:['Corde sur poulie basse, prise neutre.','Coudes collés au corps.','Pas de balancier.'] },
 };
 const ALT = {
   squat:['hack', 'presse', 'goblet'], couche:['couchehalt', 'couchesmith', 'chest'], tractions:['tirage', 'tirageserre'],
   legcurl:['legcurlallonge', 'rdl'], elev:['elevpoulie', 'elevmachine'], curlinc:['curlhalt', 'curlpoulie'],
   tri:['trihalt', 'barrefront', 'pushdown'], presse:['hack', 'squat', 'goblet'], inclhalt:['inclbarre', 'inclsmith', 'couchehalt'],
-  row:['rowhalt', 'rowpoulie'], sdtr:['rdl', 'pullthrough'], dips:['dipsmachine', 'couchesserre'],
+  row:['rowuni', 'rowhalt', 'rowpoulie'], sdtr:['rdl', 'pullthrough'], dips:['dipsmachine', 'couchesserre'],
   rfly:['rflypoulie', 'facepull', 'oiseau'], mollets:['molletspresse', 'molletssmith'], bulgare:['fentes', 'stepup', 'presse'],
   chest:['couchehalt', 'couche', 'inclhalt'], tirage:['tractions', 'tirageserre', 'pullover'], legext:['sissy', 'goblet'],
   epaules:['milhalt', 'milbarre'], marteau:['marteaupoulie', 'curlhalt'],
@@ -358,6 +368,61 @@ const resume = sets => sets.map(x => (num(x[0]) ? kgFr(num(x[0])) + ' kg × ' : 
 const tropFacile = (e, prec) => prec && prec.length >= e.s && prec.slice(0, e.s).every(x => +x[1] >= e.hi);
 const arrondi = v => Math.round(v / 2.5) * 2.5;
 const e1rm = x => num(x[0]) * (1 + num(x[1]) / 30);
+// ---------- rangs E à S ----------
+// Niveau = meilleur 1RM estimé des 3 dernières séances, rapporté au poids du corps (dernier poids noté, 75 kg sinon).
+// Dips et tractions : poids du corps + lest. Haltères : charge d'un haltère. Seuils des rangs D, C, B, A, S
+// (sous D = E), calés sur les standards de force courants pour un homme adulte.
+const RANGS = ['E', 'D', 'C', 'B', 'A', 'S'];
+const BAREME = {
+  squat:[.75, 1, 1.25, 1.6, 2], couche:[.5, .75, 1, 1.25, 1.5], tractions:[1.07, 1.2, 1.35, 1.55, 1.8],
+  legcurl:[.45, .65, .9, 1.15, 1.45], elev:[.06, .1, .14, .2, .27], curlinc:[.1, .16, .23, .32, .42], tri:[.25, .4, .55, .72, .95],
+  presse:[1.5, 2, 2.75, 3.5, 4.5], inclhalt:[.15, .25, .37, .5, .65], row:[.45, .65, .9, 1.15, 1.45], sdtr:[.6, .9, 1.2, 1.5, 1.9],
+  dips:[1.15, 1.35, 1.55, 1.8, 2.1], rfly:[.05, .08, .12, .17, .23], mollets:[.6, 1, 1.5, 2, 2.6], bulgare:[.1, .18, .28, .4, .55],
+  chest:[.5, .75, 1, 1.3, 1.65], tirage:[.5, .7, .95, 1.2, 1.5], legext:[.45, .7, .95, 1.25, 1.6], epaules:[.35, .55, .75, 1, 1.25],
+  marteau:[.1, .16, .23, .31, .4],
+  pushdown:[.3, .45, .6, .8, 1.05], rowhalt:[.2, .32, .45, .6, .8], rowuni:[.25, .38, .5, .65, .85], rowbarre:[.5, .7, .95, 1.2, 1.5],
+  curlhalt:[.1, .16, .23, .31, .4], curlbarre:[.25, .4, .55, .75, .95], elevmachine:[.25, .4, .55, .75, 1], elevpoulie:[.04, .07, .1, .14, .19],
+  milhalt:[.12, .2, .3, .4, .52], milbarre:[.35, .5, .65, .85, 1.05], facepull:[.25, .4, .55, .75, 1], couchesmith:[.5, .75, 1, 1.25, 1.5],
+  couchehalt:[.15, .25, .37, .5, .65], inclbarre:[.45, .65, .85, 1.1, 1.35], squatsmith:[.7, .95, 1.2, 1.55, 1.95],
+  presseassise:[1, 1.4, 1.9, 2.5, 3.2], molletspresse:[.8, 1.3, 1.9, 2.6, 3.4], hack:[1, 1.4, 1.9, 2.5, 3.1], goblet:[.2, .3, .42, .55, .7],
+};
+const POIDS_DEFAUT = 75;
+const poidsNote = () => { const d = Object.keys(D.poids).sort(); return d.length ? num(D.poids[d.at(-1)]) : 0; };
+const bw = () => poidsNote() || POIDS_DEFAUT;
+const repsCible = id => { for (const s of ORDRE) { const e = P[s].find(x => x.id === id); if (e) return e.lo; } return 10; };
+const force = (id, x) => { const r = Math.min(num(x[1]), 20); if (!r) return 0;
+  return (num(x[0]) + (FICHE(id).lest ? bw() : 0)) * (1 + r / 30); };
+function rang(id, h) {
+  const b = BAREME[id]; if (!b || !h.length) return null;
+  const niv = l => Math.max(0, ...l.flatMap(x => x.sets.map(y => force(id, y))));
+  const n = niv(h.slice(-3)); if (!n) return null;
+  const idx = v => b.filter(t => v / bw() >= t - 1e-9).length;
+  const tout = h.map(x => ({ d: x.d, i: idx(niv([x])) })), top = tout.reduce((a, c) => c.i > a.i ? c : a);
+  return { i: idx(n), n, ratio: n / bw(), top };
+}
+// charge à atteindre pour le rang k (1 = D ... 5 = S), aux reps du bas de la fourchette
+function cibleRang(id, k) {
+  const f = FICHE(id), r = repsCible(id), besoin = BAREME[id][k - 1] * bw();
+  let kg = besoin / (1 + r / 30) - (f.lest ? bw() : 0);
+  if (f.lest && kg <= 0) return `poids du corps × ${Math.max(1, Math.ceil(30 * (besoin / bw() - 1) - 1e-9))}`;
+  const pas = f.barre ? 2.5 : 1; kg = Math.ceil(kg / pas - 1e-9) * pas;
+  return `${f.lest ? '+' : ''}${kgFr(kg)} kg × ${r}`;
+}
+const badge = (r, grand) => r ? `<span class="rang r${RANGS[r.i]}${grand ? ' grand' : ''}">${RANGS[r.i]}</span>` : '';
+function blocRangs(id, h) {
+  const r = rang(id, h); if (!r) return '';
+  const lignes = RANGS.slice(1).map((R, j) => { const k = j + 1, ok = r.i >= k, proch = k === r.i + 1;
+    return `<div class="ligne${proch ? ' proch' : ''}"><span class="rang r${R}">${R}</span><span class="txt"><b>${cibleRang(id, k)}</b>
+      <small>${ok ? 'atteint' : proch ? 'prochain rang' : 'à venir'}</small></span>${ok ? '<span class="rec">✓</span>' : ''}</div>`; }).join('');
+  const sansPoids = poidsNote() ? '' : ` Calculé pour ${POIDS_DEFAUT} kg de poids du corps : note ton poids dans Progrès pour un rang juste.`;
+  return `<div class="graph"><div class="rangtete">${badge(r, 1)}<p class="lecture">Rang ${RANGS[r.i]} sur tes 3 dernières séances
+    (1RM estimé ≈ ${kgFr(Math.round(r.ratio * 100) / 100)} fois ton poids). Meilleur rang : ${RANGS[r.top.i]} (${dateFr(r.top.d, { day:'numeric', month:'short', year:'numeric' })})${sansPoids ? "." + sansPoids : "."}</p></div>
+    <p class="titre">Objectifs par rang</p>${lignes}</div>`;
+}
+function ligneRang(id) {
+  const r = rang(id, histoMouvement(id).filter(x => x.d < AUJ)); if (!r) return '';
+  return `<p class="cible">${badge(r)}Rang ${RANGS[r.i]}${r.i < 5 ? `, rang ${RANGS[r.i + 1]} à ${cibleRang(id, r.i + 1)}` : ', le plus haut'}</p>`;
+}
 
 function etapes(s) {
   const l = P[s], out = [];
@@ -640,6 +705,7 @@ function vExo() {
     <h1>${e.n}</h1>
     <p class="cible">Série ${st.k + 1} sur ${nb}, objectif ${e.lo}-${e.hi} reps${e.note ? ' ' + e.note : ''}${reposTxt}</p>
     <p class="regle">${REGLE(sem)}</p>
+    ${ligneRang(e.id)}
     ${blocAlt}
     <div class="puces">${puces}</div>
     ${infos}
@@ -710,7 +776,7 @@ function vProgres() {
     const maxs = h.map(x => Math.max(...x.sets.map(y => num(y[0]))));
     const delta = maxs.at(-1) - maxs[0];
     const sous = maxs.at(-1) ? `max ${kgFr(maxs.at(-1))} kg` + (h.length > 1 && delta ? `, ${delta > 0 ? '+' : ''}${kgFr(delta)} kg depuis le ${dateCourte(h[0].d)}` : '') : `${h.length} séance${h.length > 1 ? 's' : ''}`;
-    return `<button class="ligne" data-a="mouv" data-id="${e.id}"><span class="txt"><b>${e.n}</b><small>${sous}</small></span><span class="chev">›</span></button>`;
+    return `<button class="ligne" data-a="mouv" data-id="${e.id}"><span class="txt"><b>${e.n}</b><small>${sous}</small></span>${badge(rang(e.id, h))}<span class="chev">›</span></button>`;
   }).join('');
   app.innerHTML = `<div class="page">
     <div class="haut"><h1 style="margin:0">Progrès</h1><button class="mini" data-a="partager">Partager</button></div>
@@ -744,10 +810,11 @@ function vMouv() {
     <div class="haut"><button class="retour" data-a="retour">‹ Retour</button><span></span></div>
     <h1>${e.n}</h1>
     ${rec}
+    ${blocRangs(e.id, h)}
     ${h.length ? `<div class="graph"><p class="titre">${avecKg ? 'Charge max par séance (kg)' : 'Reps max par séance'}</p>
       <p class="lecture">Touche la courbe pour lire une séance.</p>${graphique(pts, avecKg ? 'kg' : 'reps')}</div>
       <h2>Détail</h2>
-      ${h.slice().reverse().map(x => `<div class="ligne"><span class="txt"><b>${dateFr(x.d)}</b><small>${resume(x.sets)}${carnet.has(x.d) ? ', carnet' : ''}</small></span></div>`).join('')}`
+      ${h.slice().reverse().map(x => `<div class="ligne"><span class="txt"><b>${dateFr(x.d)}${x.d.slice(0, 4) !== AUJ.slice(0, 4) ? " " + x.d.slice(0, 4) : ""}</b><small>${resume(x.sets)}${carnet.has(x.d) ? ', carnet' : ''}</small></span></div>`).join('')}`
     : '<p class="vide">Pas encore de série sur cet exercice.</p>'}
     <details><summary>Technique</summary><ul>${(TECH[e.id] || []).map(t => `<li>${t}</li>`).join('')}</ul></details>
   </div>`;
@@ -863,7 +930,7 @@ function textePartage() {
   const { cycle, s } = semaine(), l = seancesFaites();
   const lignes = MOUVEMENTS.map(e => { const h = histoMouvement(e.id); if (!h.length) return '';
     const maxs = h.map(x => Math.max(...x.sets.map(y => num(y[0])))), d = maxs.at(-1) - maxs[0];
-    return maxs.at(-1) ? `${e.n} : ${kgFr(maxs.at(-1))} kg${h.length > 1 && d ? ` (${d > 0 ? '+' : ''}${kgFr(d)} kg)` : ''}` : ''; }).filter(Boolean);
+    return maxs.at(-1) ? `${e.n} : ${kgFr(maxs.at(-1))} kg${h.length > 1 && d ? ` (${d > 0 ? '+' : ''}${kgFr(d)} kg)` : ''}${rang(e.id, h) ? ', rang ' + RANGS[rang(e.id, h).i] : ''}` : ''; }).filter(Boolean);
   return [`Progrès de ${PROF.actif}, cycle ${cycle} semaine ${s} : ${l.length} séance${l.length > 1 ? 's' : ''}`, ...lignes].join(String.fromCharCode(10));
 }
 const ACTIONS = {
