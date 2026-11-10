@@ -250,6 +250,7 @@ const AUTRES = {
   curlpoulie:{ n:'Curl poulie basse', t:['Face à la poulie, coudes fixes.','Monte sans avancer les coudes.','Descente contrôlée jusqu\'au bras tendu.'] },
   trihalt:{ n:'Extension triceps haltère au-dessus de la tête', t:['Haltère tenu à deux mains derrière la tête.','Coudes serrés et pointés vers le haut.','Descends bien derrière la tête, tends complètement.'] },
   barrefront:{ n:'Barre au front EZ', t:['Allongé, bras verticaux.','Descends la barre vers le front en gardant les coudes fixes.','Tends complètement.'] },
+  tritriangle:{ n:'Extension triceps poulie prise triangle', t:['Poignée triangle, coudes collés au corps.','Tends complètement en bas.','Remonte lentement jusqu\'à 90°.'] },
   pushdown:{ n:'Extension triceps poulie haute', t:['Corde ou barre, coudes collés au corps.','Tends complètement en bas.','Remonte lentement jusqu\'à 90°.'] },
   inclbarre:{ n:'Développé incliné barre', barre:1, t:['Banc à environ 30°.','Barre vers le haut des pecs, omoplates serrées.','Coudes pas trop écartés.'] },
   inclsmith:{ n:'Développé incliné Smith', t:['Banc à environ 30°, barre au-dessus du haut des pecs.','Omoplates serrées.','Note le poids de la barre Smith.'] },
@@ -279,7 +280,7 @@ const AUTRES = {
 const ALT = {
   squat:['hack', 'presse', 'goblet'], couche:['couchehalt', 'couchesmith', 'chest'], tractions:['tirage', 'tirageserre'],
   legcurl:['legcurlallonge', 'rdl'], elev:['elevpoulie', 'elevmachine'], curlinc:['curlhalt', 'curlpoulie'],
-  tri:['trihalt', 'barrefront', 'pushdown'], presse:['hack', 'squat', 'goblet'], inclhalt:['inclbarre', 'inclsmith', 'couchehalt'],
+  tri:['trihalt', 'barrefront', 'pushdown', 'tritriangle'], presse:['hack', 'squat', 'goblet'], inclhalt:['inclbarre', 'inclsmith', 'couchehalt'],
   row:['rowuni', 'rowhalt', 'rowpoulie'], sdtr:['rdl', 'pullthrough'], dips:['dipsmachine', 'couchesserre'],
   rfly:['rflypoulie', 'facepull', 'oiseau'], mollets:['molletspresse', 'molletssmith'], bulgare:['fentes', 'stepup', 'presse'],
   chest:['couchehalt', 'couche', 'inclhalt'], tirage:['tractions', 'tirageserre', 'pullover'], legext:['sissy', 'goblet'],
@@ -382,7 +383,7 @@ const BAREME = {
   dips:[1.15, 1.35, 1.55, 1.8, 2.1], rfly:[.05, .08, .12, .17, .23], mollets:[1.4, 1.7, 2.1, 2.6, 3.2], molletssmith:[1.4, 1.7, 2.1, 2.6, 3.2], bulgare:[.1, .18, .28, .4, .55],
   chest:[.5, .75, 1, 1.3, 1.65], tirage:[.5, .7, .95, 1.2, 1.5], legext:[.45, .7, .95, 1.25, 1.6], epaules:[.35, .55, .75, 1, 1.25],
   marteau:[.1, .16, .23, .31, .4],
-  pushdown:[.3, .45, .6, .8, 1.05], rowhalt:[.2, .32, .45, .6, .8], rowuni:[.28, .43, .58, .75, .98], rowbarre:[.38, .53, .7, .9, 1.12],
+  pushdown:[.3, .45, .6, .8, 1.05], tritriangle:[.38, .56, .75, 1, 1.3], rowhalt:[.2, .32, .45, .6, .8], rowuni:[.28, .43, .58, .75, .98], rowbarre:[.38, .53, .7, .9, 1.12],
   curlhalt:[.1, .16, .23, .31, .4], curlbarre:[.25, .4, .55, .75, .95], elevmachine:[.3, .5, .7, .95, 1.25], elevpoulie:[.035, .055, .08, .11, .15],
   milhalt:[.12, .2, .3, .4, .52], milbarre:[.35, .5, .65, .85, 1.05], facepull:[.35, .55, .77, 1.05, 1.4], couchesmith:[.5, .75, 1, 1.25, 1.5],
   couchehalt:[.15, .25, .37, .5, .65], inclbarre:[.45, .65, .85, 1.1, 1.35], squatsmith:[.5, .67, .85, 1.1, 1.4],
@@ -444,7 +445,7 @@ function blocRangs(id, h) {
 const FAMILLE = { hack:'squat', goblet:'squat', squatsmith:'squat', presseassise:'presse', couchehalt:'couche', couchesmith:'couche',
   couchesserre:'dips', dipsmachine:'dips', tirageserre:'tirage', pullover:'tirage', legcurlallonge:'legcurl', rdl:'sdtr', pullthrough:'sdtr',
   elevpoulie:'elev', elevmachine:'elev', curlhalt:'curlinc', curlpoulie:'curlinc', curlbarre:'curlinc', trihalt:'tri', barrefront:'tri',
-  pushdown:'tri', inclbarre:'inclhalt', inclsmith:'inclhalt', rowhalt:'row', rowpoulie:'row', rowuni:'row', rowbarre:'row',
+  pushdown:'tri', tritriangle:'tri', inclbarre:'inclhalt', inclsmith:'inclhalt', rowhalt:'row', rowpoulie:'row', rowuni:'row', rowbarre:'row',
   rflypoulie:'rfly', facepull:'rfly', oiseau:'rfly', molletspresse:'mollets', molletssmith:'mollets', fentes:'bulgare', stepup:'bulgare',
   sissy:'legext', milhalt:'epaules', milbarre:'epaules', marteaupoulie:'marteau' };
 const FENETRE = 90, MIN_FAMILLES = 5;
