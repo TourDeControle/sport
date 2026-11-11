@@ -207,7 +207,7 @@ const P = {
     { id:'tirage', n:'Tirage vertical', s:4, lo:8, hi:12, repos:120 },
     { id:'legext', n:'Leg extension', s:3, lo:12, hi:15, ss:1, leg:1, petit:1 },
     { id:'legcurl', n:'Leg curl assis', s:3, lo:12, hi:15, ss:1, leg:1 },
-    { id:'epaules', n:'Développé épaules machine', s:2, lo:8, hi:12, repos:120 },
+    { id:'rowuni', n:'Row poitrine appuyée', s:3, lo:8, hi:12, repos:120, note:'par bras' },
     { id:'elev', n:'Élévations latérales', s:3, lo:12, hi:15, ss:3, petit:1 },
     { id:'marteau', n:'Curl marteau', s:3, lo:12, hi:15, ss:3, petit:1 },
   ],
@@ -231,7 +231,7 @@ const TECH = {
   chest:['Poignées à hauteur du milieu des pecs.','Omoplates serrées contre le dossier.','Ne verrouille pas les coudes.'],
   tirage:['Prise un peu plus large que les épaules.','Tire la barre vers le haut de la poitrine, coudes vers le bas.','Ne te penche pas trop en arrière.'],
   legext:['Genou aligné avec l\'axe de la machine.','Tends complètement et tiens 1 s.','Descente lente.'],
-  epaules:['Dos collé au dossier.','Pousse sans cambrer.','Redescends jusqu\'à hauteur du menton.'],
+  rowuni:['Poitrine collée au support, pieds calés.','Tire les coudes vers l\'arrière, serre les omoplates.','Laisse les épaules s\'avancer à l\'étirement.'],
   marteau:['Prise neutre, pouces vers le haut.','Coudes collés au corps.','Pas de balancier.'],
 };
 // Alternatives quand la machine est prise : même muscle, même fourchette de reps et même repos que l'exercice prévu.
@@ -270,7 +270,7 @@ const AUTRES = {
   sissy:{ n:'Sissy squat', t:['Tiens-toi à un support.','Genoux vers l\'avant, buste et cuisses alignés.','Descends tant que c\'est sans douleur.'] },
   milhalt:{ n:'Développé épaules haltères assis', t:['Dossier presque vertical.','Haltères à hauteur d\'oreilles au départ.','Pousse sans cambrer.'] },
   milbarre:{ n:'Développé militaire barre', barre:1, t:['Debout, fessiers et abdos serrés.','Barre devant le visage, puis au-dessus de la tête.','Pas de cambrure.'] },
-  rowuni:{ n:'Row assis machine unilatéral', note:'par bras', t:['Buste droit, poitrine face au support.','Tire le coude vers l\'arrière, un bras après l\'autre.','Laisse l\'épaule s\'avancer à l\'étirement.'] },
+  epaules:{ n:'Développé épaules machine', t:['Dos collé au dossier.','Pousse sans cambrer.','Redescends jusqu\'à hauteur du menton.'] },
   rowbarre:{ n:'Rowing barre', barre:1, t:['Buste penché à 45°, dos plat.','Tire la barre vers le nombril.','Pas d\'élan avec le buste.'] },
   squatsmith:{ n:'Squat Smith', t:['Pieds un peu devant la barre.','Descends au moins cuisses parallèles.','Note le poids de la barre Smith.'] },
   presseassise:{ n:'Presse à cuisses assise', t:['Dos collé au dossier.','Descends sans décoller le bas du dos.','Ne verrouille pas les genoux.'] },
@@ -284,7 +284,7 @@ const ALT = {
   row:['rowuni', 'rowhalt', 'rowpoulie'], sdtr:['rdl', 'pullthrough'], dips:['dipsmachine', 'couchesserre'],
   rfly:['rflypoulie', 'facepull', 'oiseau'], mollets:['molletspresse', 'molletssmith'], bulgare:['fentes', 'stepup', 'presse'],
   chest:['couchehalt', 'couche', 'inclhalt'], tirage:['tractions', 'tirageserre', 'pullover'], legext:['sissy', 'goblet'],
-  epaules:['milhalt', 'milbarre'], marteau:['marteaupoulie', 'curlhalt'],
+  rowuni:['rowhalt', 'row'], marteau:['marteaupoulie', 'curlhalt'],
 };
 for (const [id, x] of Object.entries(AUTRES)) TECH[id] = x.t;
 // fiche d'un mouvement par id : ce qui définit le geste (nom, barre, lest, note)
@@ -445,7 +445,7 @@ function blocRangs(id, h) {
 const FAMILLE = { hack:'squat', goblet:'squat', squatsmith:'squat', presseassise:'presse', couchehalt:'couche', couchesmith:'couche',
   couchesserre:'dips', dipsmachine:'dips', tirageserre:'tirage', pullover:'tirage', legcurlallonge:'legcurl', rdl:'sdtr', pullthrough:'sdtr',
   elevpoulie:'elev', elevmachine:'elev', curlhalt:'curlinc', curlpoulie:'curlinc', curlbarre:'curlinc', trihalt:'tri', barrefront:'tri',
-  pushdown:'tri', tritriangle:'tri', inclbarre:'inclhalt', inclsmith:'inclhalt', rowhalt:'row', rowpoulie:'row', rowuni:'row', rowbarre:'row',
+  pushdown:'tri', tritriangle:'tri', inclbarre:'inclhalt', inclsmith:'inclhalt', rowhalt:'row', rowpoulie:'row', rowbarre:'row',
   rflypoulie:'rfly', facepull:'rfly', oiseau:'rfly', molletspresse:'mollets', molletssmith:'mollets', fentes:'bulgare', stepup:'bulgare',
   sissy:'legext', milhalt:'epaules', milbarre:'epaules', marteaupoulie:'marteau' };
 const FENETRE = 90, MIN_FAMILLES = 5;
